@@ -113,33 +113,35 @@ function renderEvents(events) {
 
     container.innerHTML = events.map(event => `
         <div class="col-lg-4 col-md-6">
-            <div class="event-card">
-                <div class="event-card-header">
-                    <span class="event-badge">${event.category}</span>
-                    <h5 class="event-title">${event.title}</h5>
-                </div>
-                <div class="event-card-body">
-                    <div class="event-detail">
-                        <i class="bi bi-geo-alt"></i>
-                        <p class="event-detail-text">${event.location}</p>
+            <a href="/pages/event-details/index.html?id=${event.id}" class="event-card-link">
+                <div class="event-card">
+                    <div class="event-card-header">
+                        <span class="event-badge">${event.category}</span>
+                        <h5 class="event-title">${event.title}</h5>
                     </div>
-                    <div class="event-detail">
-                        <i class="bi bi-calendar-event"></i>
-                        <p class="event-detail-text">${event.date} at ${event.time}</p>
+                    <div class="event-card-body">
+                        <div class="event-detail">
+                            <i class="bi bi-geo-alt"></i>
+                            <p class="event-detail-text">${event.location}</p>
+                        </div>
+                        <div class="event-detail">
+                            <i class="bi bi-calendar-event"></i>
+                            <p class="event-detail-text">${event.date} at ${event.time}</p>
+                        </div>
+                        <div class="event-detail">
+                            <i class="bi bi-people"></i>
+                            <p class="event-detail-text event-capacity">
+                                <span>${event.participants} attending</span>
+                            </p>
+                        </div>
                     </div>
-                    <div class="event-detail">
-                        <i class="bi bi-people"></i>
-                        <p class="event-detail-text event-capacity">
-                            <span>${event.participants} attending</span>
-                        </p>
+                    <div class="event-card-footer">
+                        <button class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>View Details
+                        </button>
                     </div>
                 </div>
-                <div class="event-card-footer">
-                    <button class="btn btn-primary" onclick="joinEvent('${event.title}')">
-                        <i class="bi bi-plus-circle me-2"></i>Join Event
-                    </button>
-                </div>
-            </div>
+            </a>
         </div>
     `).join('');
 }

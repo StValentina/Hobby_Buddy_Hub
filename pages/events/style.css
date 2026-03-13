@@ -12,6 +12,20 @@
     font-size: 1.1rem;
 }
 
+/* Event Card Link */
+.event-card-link {
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    display: block;
+    height: 100%;
+}
+
+.event-card-link:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
 /* Event Card Styles */
 .event-card {
     height: 100%;
@@ -24,7 +38,7 @@
     background: white;
 }
 
-.event-card:hover {
+.event-card-link:hover .event-card {
     transform: translateY(-8px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     border-color: #667eea;
