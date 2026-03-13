@@ -17,6 +17,7 @@ export default defineConfig({
         dashboard: resolve(__dirname, 'pages/dashboard/index.html'),
         index: resolve(__dirname, 'pages/index/index.html'),
         hobbies: resolve(__dirname, 'pages/hobbies/index.html'),
+        hobbyDetails: resolve(__dirname, 'pages/hobby-details/index.html'),
         events: resolve(__dirname, 'pages/events/index.html'),
         eventDetails: resolve(__dirname, 'pages/event-details/index.html'),
         profile: resolve(__dirname, 'pages/profile/index.html'),

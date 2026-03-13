@@ -111,6 +111,33 @@ const peopleData = [
         hobbies: ['Dancing', 'Photography', 'Cooking'],
         role: 'host',
         avatar: 'CR'
+    },
+    {
+        id: 13,
+        name: 'Sophia Anderson',
+        city: 'Sofia',
+        bio: 'Fitness coach and healthy lifestyle advocate. Helping others achieve their goals.',
+        hobbies: ['Hiking', 'Dancing', 'Cooking'],
+        role: 'host',
+        avatar: 'SA'
+    },
+    {
+        id: 14,
+        name: 'Lucas Silva',
+        city: 'Burgas',
+        bio: 'Aviation enthusiast and travel blogger. Exploring the world one flight at a time.',
+        hobbies: ['Traveling', 'Photography', 'Literature'],
+        role: 'seeker',
+        avatar: 'LS'
+    },
+    {
+        id: 15,
+        name: 'Emma Thompson',
+        city: 'Varna',
+        bio: 'Creative writer and book club organizer. Passionate about storytelling.',
+        hobbies: ['Literature', 'Painting', 'Traveling'],
+        role: 'host',
+        avatar: 'ET'
     }
 ];
 
@@ -122,10 +149,16 @@ let currentFilters = {
     role: ''
 };
 
+// Pagination settings
+const itemsPerPage = 12;
+let currentPage = 1;
+let filteredPeople = [];
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     setActiveNav('Find People');
-    renderPeople(peopleData);
+    filteredPeople = peopleData;
+    renderPeople(filteredPeople);
     setupEventListeners();
 });
 
@@ -175,6 +208,8 @@ function applyFilters() {
         return nameMatch && hobbyMatch && cityMatch && roleMatch;
     });
 
+    filteredPeople = filtered;
+    currentPage = 1;
     renderPeople(filtered);
 }
 
@@ -194,6 +229,8 @@ function resetFilters() {
     document.getElementById('filterCity').value = '';
     document.getElementById('filterRole').value = '';
 
+    filteredPeople = peopleData;
+    currentPage = 1;
     renderPeople(peopleData);
 }
 
@@ -213,10 +250,17 @@ function renderPeople(people) {
                 </div>
             </div>
         `;
+        renderPaginationControls(0);
         return;
     }
 
-    container.innerHTML = people.map(person => {
+    // Calculate pagination
+    const totalPages = Math.ceil(people.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedPeople = people.slice(startIndex, endIndex);
+
+    container.innerHTML = paginatedPeople.map(person => {
         const sharedHobby = person.hobbies[0]; // Show first hobby as shared interest
         const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b'];
         const colorIndex = person.id % colors.length;
@@ -252,12 +296,65 @@ function renderPeople(people) {
             </div>
         `;
     }).join('');
+
+    // Render pagination only if there are more than itemsPerPage items
+    if (people.length > itemsPerPage) {
+        renderPaginationControls(totalPages);
+    } else {
+        renderPaginationControls(0);
+    }
 }
 
 /**
- * View person profile
+ * Render pagination controls
  */
-function viewProfile(personId) {
-    // In a real app, this would navigate to the person's profile page
-    alert(`View profile for person ${personId}`);
+function renderPaginationControls(totalPages) {
+    const paginationContainer = document.getElementById('paginationControls');
+    
+    if (totalPages === 0) {
+        paginationContainer.innerHTML = '';
+        return;
+    }
+
+    let html = '';
+
+    // Previous button
+    html += `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="goToPage(${currentPage - 1}); return false;">
+                <i class="bi bi-chevron-left me-1"></i>Previous
+            </a>
+        </li>
+    `;
+
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === currentPage) {
+            html += `<li class="page-item active"><span class="page-link">${i}</span></li>`;
+        } else {
+            html += `<li class="page-item"><a class="page-link" href="#" onclick="goToPage(${i}); return false;">${i}</a></li>`;
+        }
+    }
+
+    // Next button
+    html += `
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="goToPage(${currentPage + 1}); return false;">
+                Next<i class="bi bi-chevron-right ms-1"></i>
+            </a>
+        </li>
+    `;
+
+    paginationContainer.innerHTML = html;
+}
+
+/**
+ * Go to specific page
+ */
+function goToPage(pageNumber) {
+    currentPage = pageNumber;
+    renderPeople(filteredPeople);
+    
+    // Scroll to top of people grid
+    document.getElementById('peopleGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }

@@ -97,23 +97,25 @@ function renderHobbies(hobbies) {
 
     grid.innerHTML = hobbies.map(hobby => `
         <div class="col-lg-3 col-md-6">
-            <div class="hobby-card">
-                <div class="hobby-card-image">
-                    ${hobby.icon}
-                </div>
-                <div class="hobby-card-body">
-                    <h5 class="hobby-card-title">${hobby.name}</h5>
-                    <p class="hobby-card-description">${hobby.description}</p>
-                    <div class="hobby-card-tags">
-                        ${hobby.tags.map(tag => `<span class="hobby-tag">${tag}</span>`).join('')}
+            <a href="/pages/hobby-details/index.html?id=${hobby.id}" class="hobby-card-link">
+                <div class="hobby-card">
+                    <div class="hobby-card-image">
+                        ${hobby.icon}
+                    </div>
+                    <div class="hobby-card-body">
+                        <h5 class="hobby-card-title">${hobby.name}</h5>
+                        <p class="hobby-card-description">${hobby.description}</p>
+                        <div class="hobby-card-tags">
+                            ${hobby.tags.map(tag => `<span class="hobby-tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="hobby-card-footer">
+                        <button type="button" class="btn btn-primary btn-sm">
+                            <i class="bi bi-arrow-right me-2"></i>View Details
+                        </button>
                     </div>
                 </div>
-                <div class="hobby-card-footer">
-                    <button class="btn btn-primary btn-sm" onclick="joinHobby('${hobby.name}')">
-                        <i class="bi bi-plus-circle me-2"></i>Join
-                    </button>
-                </div>
-            </div>
+            </a>
         </div>
     `).join('');
 }
