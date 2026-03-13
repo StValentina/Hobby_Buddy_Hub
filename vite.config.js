@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { resolve } from 'path';
 
 export default defineConfig({
   server: {
@@ -10,5 +11,15 @@ export default defineConfig({
     minify: 'terser',
     sourcemap: false,
     outDir: 'dist',
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        dashboard: resolve(__dirname, 'pages/dashboard/index.html'),
+        index: resolve(__dirname, 'pages/index/index.html'),
+        // Add more pages here as needed
+        // login: resolve(__dirname, 'pages/login/index.html'),
+        // register: resolve(__dirname, 'pages/register/index.html'),
+      },
+    },
   },
 });

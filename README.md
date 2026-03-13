@@ -1,34 +1,52 @@
 # Hobby Buddy Hub - Multi-Page Application
 
-A vanilla JavaScript multi-page application built with Vite, Bootstrap, and Supabase.
+A vanilla JavaScript multi-page application (MPA) built with Vite, Bootstrap, and Supabase.
 
 ## Project Structure
 
 ```
-src/
-├── pages/              # Application pages (dynamically routed)
-│   ├── index/         # Home page (/)
-│   └── dashboard/     # Dashboard page (/dashboard)
-├── components/        # Reusable components
-│   ├── header.js      # Navigation header
-│   └── footer.js      # Footer component
-├── services/          # API and business logic
-│   └── api.js        # Supabase API service
-├── utils/            # Utility functions
-│   └── router.js     # Client-side router
-├── styles/           # Global styles
-│   └── main.css      # Main stylesheet
-├── config.js         # Configuration
-├── app.js           # App initialization
-└── main.js          # Entry point
+Hobby_Buddy_Hub/
+├── pages/                          # Application pages (Multi-Page structure)
+│   ├── index/                      # Home page
+│   │   ├── index.html              # Page HTML
+│   │   ├── style.css               # Page styles
+│   │   └── script.js               # Page scripts
+│   │
+│   ├── dashboard/                  # Dashboard page
+│   │   ├── index.html              # Page HTML
+│   │   ├── style.css               # Page styles
+│   │   └── script.js               # Page scripts
+│   │
+│   └── components/                 # Shared components
+│       ├── header.html             # Navigation bar (included on all pages)
+│       └── footer.html             # Footer (included on all pages)
+│
+├── public/                          # Static assets
+│   ├── css/
+│   │   └── global.css              # Global styles (all pages)
+│   ├── js/
+│   │   └── global.js               # Global utilities
+│   └── images/                     # Images, icons, etc.
+│
+├── index.html                       # Main entry point
+├── package.json                     # Dependencies
+├── vite.config.js                   # Vite configuration (MPA setup)
+├── .env.example                     # Environment template
+├── .gitignore                       # Git ignore rules
+└── README.md                        # This file
 
-public/              # Static assets
-
-index.html           # Main HTML file
-
-package.json         # Dependencies
-vite.config.js       # Vite configuration
 ```
+
+## Features
+
+✅ Multi-Page Application (MPA) - Each page has its own HTML, CSS, JS  
+✅ Shared Header & Footer components (auto-loaded)  
+✅ Responsive design (mobile/tablet/desktop)  
+✅ Bootstrap 5 components  
+✅ Custom CSS with responsive breakpoints  
+✅ Vite build tool for fast development  
+✅ Vanilla JavaScript (no frameworks)  
+✅ Easy to add new pages  
 
 ## Setup Instructions
 
@@ -71,106 +89,142 @@ Output files will be in the `dist/` directory.
 npm run preview
 ```
 
-## Architecture
+## Page Structure
 
-### Routing System
+Each page folder contains three files:
 
-The application uses a custom client-side router (`src/utils/router.js`) that:
-- Maps URL paths to page components
-- Handles page transitions with animations
-- Manages browser history (back/forward buttons)
-- Prevents full page reloads
+### index.html
+- Contains the complete page HTML
+- Includes Bootstrap CDN links
+- Loads global CSS and page-specific CSS
+- Has placeholders for header and footer (`id="header-container"` & `id="footer-container"`)
 
-### Page Structure
+### style.css
+- Page-specific styles
+- Complements global CSS
+- Only loaded when page is active
 
-Each page is a class that implements:
-- `render()` - Renders the page content
-- `setup()` - Optional setup logic (event listeners, data loading)
-- `teardown()` - Optional cleanup logic
+### script.js
+- Page-specific JavaScript
+- Calls `setActiveNav()` to highlight active navigation link
+- Handles page initialization and events
 
-Example:
-```javascript
-export class IndexPage {
-  async render() {
-    // Render HTML content
-  }
-  
-  async setup() {
-    // Setup event listeners, load data
-  }
-  
-  teardown() {
-    // Cleanup
-  }
-}
+## How to Add a New Page
+
+### 1. Create Page Folder
+
+```bash
+mkdir pages/mypage
 ```
 
-### Component System
+### 2. Create Page Files
 
-Components (Header, Footer) follow a similar pattern:
-- `render()` - Render component HTML
-- `teardown()` - Cleanup
+**pages/mypage/index.html**
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Page - Hobby Buddy Hub</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/public/css/global.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header id="header-container"></header>
+    
+    <main class="min-vh-100">
+        <div class="container py-4">
+            <h1>My Page</h1>
+            <!-- Page content here -->
+        </div>
+    </main>
+    
+    <footer id="footer-container"></footer>
 
-### Responsive Design
-
-Uses Bootstrap 5 for responsive grid system with custom CSS for:
-- Mobile-first design
-- Breakpoints: xs, sm (576px), md (768px), lg (992px), xl (1200px), xxl (1400px)
-- Custom animations and transitions
-
-## Adding New Pages
-
-1. Create a new directory in `src/pages/` (e.g., `src/pages/login/`)
-2. Create `login.js` with a page class
-3. Register the route in `src/utils/router.js`:
-
-```javascript
-import { LoginPage } from '../pages/login/login.js';
-
-Router.registerRoute('/login', LoginPage);
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/public/js/global.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
 ```
 
-4. Create navigation links using `href="/login"` (router handles clicks)
+**pages/mypage/style.css**
+```css
+/* Page-specific styles */
+```
+
+**pages/mypage/script.js**
+```javascript
+document.addEventListener('DOMContentLoaded', () => {
+    setActiveNav('My Page');
+});
+```
+
+### 3. Update Vite Config
+
+Add the new page to `vite.config.js`:
+
+```javascript
+input: {
+  main: resolve(__dirname, 'index.html'),
+  mypage: resolve(__dirname, 'pages/mypage/index.html'),
+  // ... other pages
+},
+```
+
+### 4. Add Navigation Link
+
+Update `pages/components/header.html` to include the new page:
+
+```html
+<li class="nav-item">
+    <a class="nav-link" href="/pages/mypage/index.html">
+        <i class="bi bi-icon me-1"></i>My Page
+    </a>
+</li>
+```
+
+## Global Components
+
+### Header (`pages/components/header.html`)
+- Navigation bar
+- Auto-loaded on all pages
+- Contains links to all pages
+- Active link highlighting
+
+### Footer (`pages/components/footer.html`)
+- Footer with links and social media
+- Auto-loaded on all pages
+
+Both components are loaded automatically by `public/js/global.js` on page load.
+
+## Styling System
+
+### Global CSS (`public/css/global.css`)
+- Base styles for all pages
+- CSS variables for colors
+- Typography
+- Responsive breakpoints
+- Animations
+
+### Page CSS (`pages/*/style.css`)
+- Page-specific customizations
+- Complements global styles
 
 ## Navigation
 
-Navigation links automatically work via the router's click handler:
+Simply use standard HTML links to navigate between pages:
 
 ```html
-<a href="/dashboard">Go to Dashboard</a>
+<a href="/pages/dashboard/index.html">Dashboard</a>
+<a href="/pages/index/index.html">Home</a>
 ```
 
-No need to manually call JavaScript functions.
-
-## Features
-
-✅ Multi-page routing without page reloads
-✅ Responsive design (mobile/tablet/desktop)
-✅ Bootstrap 5 components and utilities
-✅ Modular page and component structure
-✅ Vanilla JavaScript (no frameworks)
-✅ Browser history support (back/forward buttons)
-✅ Supabase integration ready
-✅ Custom animations and transitions
-
-## Technologies
-
-- **Frontend**: Vanilla JavaScript, HTML5, CSS3
-- **Build Tool**: Vite
-- **UI Framework**: Bootstrap 5
-- **Icons**: Bootstrap Icons
-- **Backend**: Supabase (planned)
-- **Hosting**: Netlify/Vercel (planned)
-
-## Next Steps
-
-- Implement authentication pages (login, register)
-- Create browse hobbies page
-- Create events listing and details pages
-- Integrate Supabase authentication
-- Add user profile management
-- Implement event creation and management
-- Add search and filtering functionality
+No need for special routing or JavaScript - full page navigation.
 
 ## Browser Support
 
@@ -179,6 +233,36 @@ No need to manually call JavaScript functions.
 - Safari (latest)
 - Edge (latest)
 - Mobile browsers (iOS Safari, Chrome Mobile)
+
+## Technologies
+
+- **Frontend**: Vanilla JavaScript, HTML5, CSS3
+- **Build Tool**: Vite
+- **UI Framework**: Bootstrap 5
+- **Icons**: Bootstrap Icons
+- **Backend**: Supabase (planned integration)
+- **Hosting**: Netlify/Vercel (planned)
+
+## Next Steps
+
+1. Create authentication pages (login, register)
+2. Create browse hobbies page
+3. Create events listing and details pages
+4. Integrate Supabase authentication
+5. Add user profile management
+6. Implement event creation and management
+7. Add search and filtering functionality
+
+## Troubleshooting
+
+### Header/Footer not loading
+Make sure the path in `public/js/global.js` is correct for your environment.
+
+### Styles not applying
+Check that global.css and page-specific style.css are properly linked in the HTML file.
+
+### Navigation not working
+Use proper relative paths like `/pages/pagename/index.html` for navigation links.
 
 ## License
 
