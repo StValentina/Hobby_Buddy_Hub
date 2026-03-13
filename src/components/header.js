@@ -1,0 +1,83 @@
+/**
+ * Header component - Responsive navigation bar
+ */
+
+export class Header {
+  constructor() {
+    this.container = document.getElementById('header-container');
+  }
+
+  render() {
+    this.container.innerHTML = `
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+        <div class="container-fluid">
+          <a class="navbar-brand fw-bold" href="/">
+            <i class="bi bi-star-fill text-warning me-2"></i>Hobby Buddy Hub
+          </a>
+          
+          <button 
+            class="navbar-toggler" 
+            type="button" 
+            data-bs-toggle="collapse" 
+            data-bs-target="#navbarNav" 
+            aria-controls="navbarNav" 
+            aria-expanded="false" 
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="/">
+                  <i class="bi bi-house me-1"></i>Home
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/dashboard">
+                  <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                </a>
+              </li>
+              <li class="nav-item dropdown">
+                <a 
+                  class="nav-link dropdown-toggle" 
+                  href="#" 
+                  id="navbarDropdown" 
+                  role="button" 
+                  data-bs-toggle="dropdown" 
+                  aria-expanded="false"
+                >
+                  <i class="bi bi-person-circle me-1"></i>Account
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <li><a class="dropdown-item" href="/profile">
+                    <i class="bi bi-person me-2"></i>Profile
+                  </a></li>
+                  <li><a class="dropdown-item" href="/settings">
+                    <i class="bi bi-gear me-2"></i>Settings
+                  </a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="#" onclick="handleLogout(event)">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                  </a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    `;
+  }
+
+  teardown() {
+    this.container.innerHTML = '';
+  }
+}
+
+// Logout handler (placeholder)
+window.handleLogout = function(event) {
+  event.preventDefault();
+  console.log('Logout clicked');
+  // TODO: Implement logout functionality
+};
