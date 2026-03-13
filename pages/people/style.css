@@ -1,0 +1,379 @@
+/**
+ * People Page Styles
+ */
+
+.people-main {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* Page Header */
+.page-header {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.page-header h1 {
+    color: #212529;
+}
+
+.page-header .lead {
+    font-size: 1.1rem;
+}
+
+/* Filter Section */
+.filter-section {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.search-input,
+.filter-select {
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus,
+.filter-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.form-label {
+    font-size: 14px;
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+/* People Card Grid */
+#peopleGrid {
+    padding: 20px 0;
+}
+
+.person-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.person-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+    border-color: #667eea;
+}
+
+/* Card Avatar */
+.person-card-avatar {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 64px;
+    position: relative;
+    overflow: hidden;
+}
+
+.person-card-avatar::before {
+    content: '';
+    position: absolute;
+    width: 150%;
+    height: 150%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: glow 3s ease-in-out infinite;
+}
+
+@keyframes glow {
+    0%, 100% {
+        transform: translate(0, 0);
+    }
+    50% {
+        transform: translate(10px, -10px);
+    }
+}
+
+.person-avatar-icon {
+    position: relative;
+    z-index: 1;
+}
+
+.role-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    z-index: 2;
+}
+
+/* Card Body */
+.person-card-body {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.person-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0 0 8px 0;
+}
+
+.person-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #718096;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.person-location i {
+    color: #667eea;
+}
+
+.person-bio {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 16px;
+    line-height: 1.5;
+    flex-grow: 1;
+}
+
+/* Shared Interest Badge */
+.shared-interest {
+    display: inline-block;
+    background: #eef2ff;
+    color: #667eea;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    border: 1px solid #667eea;
+}
+
+/* Person Hobbies */
+.person-hobbies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.hobby-tag {
+    background: #f0f1f5;
+    color: #2d3748;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.hobby-tag:hover {
+    background: #667eea;
+    color: white;
+}
+
+/* Card Footer */
+.person-card-footer {
+    padding: 16px 20px;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.person-card-footer .btn {
+    width: 100%;
+}
+
+.btn-view-profile {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-view-profile:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    transform: translateY(-2px);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* No Results Message */
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.no-results i {
+    font-size: 64px;
+    color: #cbd5e0;
+    margin-bottom: 20px;
+}
+
+.no-results h3 {
+    color: #2d3748;
+    margin-bottom: 10px;
+}
+
+.no-results p {
+    color: #718096;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .filter-section {
+        padding: 16px;
+    }
+
+    .form-label {
+        font-size: 13px;
+    }
+
+    .person-card-avatar {
+        height: 160px;
+        font-size: 48px;
+    }
+
+    .person-card-body {
+        padding: 16px;
+    }
+
+    .person-name {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        padding: 40px 20px !important;
+    }
+
+    .page-header h1 {
+        font-size: 28px;
+    }
+
+    .page-header .lead {
+        font-size: 1rem;
+    }
+
+    .filter-section {
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+
+    .person-card {
+        border-radius: 6px;
+    }
+
+    .person-card-avatar {
+        height: 140px;
+        font-size: 40px;
+    }
+
+    .person-card-body {
+        padding: 14px;
+    }
+
+    .person-name {
+        font-size: 15px;
+    }
+
+    .person-bio {
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+
+    .hobby-tag {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+
+    .person-card-footer {
+        padding: 12px 14px;
+    }
+
+    .role-badge {
+        padding: 3px 8px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header h1 {
+        font-size: 24px;
+    }
+
+    .page-header .lead {
+        font-size: 0.95rem;
+    }
+
+    .filter-section {
+        padding: 12px;
+    }
+
+    .form-label {
+        font-size: 12px;
+    }
+
+    .person-card-avatar {
+        height: 120px;
+        font-size: 32px;
+    }
+
+    .person-card-body {
+        padding: 12px;
+    }
+
+    .person-name {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+
+    .person-location {
+        font-size: 12px;
+        margin-bottom: 10px;
+    }
+
+    .person-bio {
+        font-size: 12px;
+        margin-bottom: 10px;
+    }
+
+    .person-hobbies {
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+
+    .hobby-tag {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+
+    .shared-interest {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+}

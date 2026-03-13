@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Hobby Buddy Hub</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="/public/css/global.css">
+    
+    <!-- Page CSS -->
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <!-- Header will be auto-loaded here -->
+    <header id="header-container"></header>
+
+    <main class="profile-main">
+        <div class="container py-5">
+            <!-- Page Title -->
+            <div class="row mb-5">
+                <div class="col-lg-12 text-center">
+                    <h1 class="display-4 fw-bold text-dark">My Profile</h1>
+                    <p class="lead text-muted">Manage your profile information and preferences</p>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Profile Card (Left Sidebar) -->
+                <div class="col-lg-4">
+                    <div class="profile-card">
+                        <!-- Avatar Section -->
+                        <div class="avatar-section">
+                            <div class="avatar-placeholder" id="avatarDisplay">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <button class="btn btn-sm btn-primary" id="changeAvatarBtn">
+                                <i class="bi bi-camera me-2"></i>Change Avatar
+                            </button>
+                        </div>
+
+                        <!-- Profile Info -->
+                        <div class="profile-info">
+                            <h2 class="profile-name" id="displayName">John Anderson</h2>
+                            <div class="profile-detail">
+                                <i class="bi bi-envelope"></i>
+                                <span id="displayEmail">john.anderson@email.com</span>
+                            </div>
+                            <div class="profile-detail">
+                                <i class="bi bi-geo-alt"></i>
+                                <span id="displayCity">Sofia, Bulgaria</span>
+                            </div>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">12</span>
+                                <span class="stat-label">Events Joined</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">5</span>
+                                <span class="stat-label">Hobbies</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">28</span>
+                                <span class="stat-label">Connections</span>
+                            </div>
+                        </div>
+
+                        <!-- Edit Button -->
+                        <button class="btn btn-lg btn-primary w-100" id="editProfileBtn">
+                            <i class="bi bi-pencil me-2"></i>Edit Profile
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Content (Right) -->
+                <div class="col-lg-8">
+                    <!-- About Section -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3 class="section-title">About Me</h3>
+                        </div>
+                        <div class="section-content">
+                            <p class="bio-text" id="displayBio">
+                                Passionate about outdoor activities and photography. Love hiking, exploring new places, and capturing beautiful moments. Always excited to meet fellow adventurers and share experiences!
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- My Hobbies Section -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3 class="section-title">My Hobbies</h3>
+                        </div>
+                        <div class="section-content">
+                            <div class="hobbies-tags" id="hobbiesList">
+                                <span class="hobby-badge">Hiking</span>
+                                <span class="hobby-badge">Photography</span>
+                                <span class="hobby-badge">Traveling</span>
+                                <span class="hobby-badge">Painting</span>
+                                <span class="hobby-badge">Reading</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Profile Form (Hidden by default) -->
+                    <div class="section-card" id="editFormSection" style="display: none;">
+                        <div class="section-header">
+                            <h3 class="section-title">Edit Profile</h3>
+                        </div>
+                        <form id="editProfileForm" class="section-content">
+                            <div class="mb-4">
+                                <label for="inputName" class="form-label fw-bold">Full Name</label>
+                                <input type="text" class="form-control form-control-lg" id="inputName" value="John Anderson" placeholder="Enter your full name">
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="inputCity" class="form-label fw-bold">City</label>
+                                <input type="text" class="form-control form-control-lg" id="inputCity" value="Sofia, Bulgaria" placeholder="Enter your city">
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="inputBio" class="form-label fw-bold">Bio</label>
+                                <textarea class="form-control" id="inputBio" rows="4" placeholder="Tell us about yourself...">Passionate about outdoor activities and photography. Love hiking, exploring new places, and capturing beautiful moments. Always excited to meet fellow adventurers and share experiences!</textarea>
+                            </div>
+
+                            <div class="form-buttons">
+                                <button type="button" class="btn btn-lg btn-primary" id="saveChangesBtn">
+                                    <i class="bi bi-check-circle me-2"></i>Save Changes
+                                </button>
+                                <button type="button" class="btn btn-lg btn-outline-secondary" id="cancelEditBtn">
+                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Danger Zone -->
+                    <div class="section-card danger-zone">
+                        <div class="section-header">
+                            <h3 class="section-title text-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>Danger Zone
+                            </h3>
+                        </div>
+                        <div class="section-content">
+                            <p class="text-muted mb-4">
+                                Deleting your account is permanent and cannot be undone. All your data, events, and connections will be removed.
+                            </p>
+                            <button type="button" class="btn btn-lg btn-danger" id="deleteAccountBtn">
+                                <i class="bi bi-trash me-2"></i>Delete Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer will be auto-loaded here -->
+    <footer id="footer-container"></footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Global JS -->
+    <script src="/public/js/global.js"></script>
+    
+    <!-- Page JS -->
+    <script src="./script.js"></script>
+</body>
+</html>

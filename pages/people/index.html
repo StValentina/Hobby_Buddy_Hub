@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find People - Hobby Buddy Hub</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="/public/css/global.css">
+    
+    <!-- Page CSS -->
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <!-- Header will be auto-loaded here -->
+    <header id="header-container"></header>
+
+    <main class="people-main">
+        <!-- Page Header -->
+        <section class="page-header bg-light py-5">
+            <div class="container text-center">
+                <h1 class="display-4 fw-bold mb-2">Find People</h1>
+                <p class="lead text-muted">Connect with people who share your interests and hobbies</p>
+            </div>
+        </section>
+
+        <!-- Filter Section -->
+        <section class="py-5 bg-white border-bottom">
+            <div class="container">
+                <div class="filter-section">
+                    <div class="row g-3 align-items-end">
+                        <!-- Search by Name -->
+                        <div class="col-lg-3 col-md-6">
+                            <label for="searchName" class="form-label fw-bold">Search by Name</label>
+                            <input 
+                                type="text" 
+                                class="form-control form-control-lg search-input" 
+                                id="searchName" 
+                                placeholder="Enter name..."
+                            >
+                        </div>
+
+                        <!-- Filter by Hobby -->
+                        <div class="col-lg-3 col-md-6">
+                            <label for="filterHobby" class="form-label fw-bold">Filter by Hobby</label>
+                            <select class="form-select form-select-lg filter-select" id="filterHobby">
+                                <option value="">All Hobbies</option>
+                                <option value="hiking">Hiking</option>
+                                <option value="photography">Photography</option>
+                                <option value="chess">Chess</option>
+                                <option value="cooking">Cooking</option>
+                                <option value="painting">Painting</option>
+                                <option value="dancing">Dancing</option>
+                                <option value="literature">Literature</option>
+                                <option value="traveling">Traveling</option>
+                            </select>
+                        </div>
+
+                        <!-- Filter by City -->
+                        <div class="col-lg-3 col-md-6">
+                            <label for="filterCity" class="form-label fw-bold">Filter by City</label>
+                            <select class="form-select form-select-lg filter-select" id="filterCity">
+                                <option value="">All Cities</option>
+                                <option value="sofia">Sofia</option>
+                                <option value="burgas">Burgas</option>
+                                <option value="varna">Varna</option>
+                                <option value="plovdiv">Plovdiv</option>
+                                <option value="ruse">Ruse</option>
+                            </select>
+                        </div>
+
+                        <!-- Filter by Role -->
+                        <div class="col-lg-3 col-md-6">
+                            <label for="filterRole" class="form-label fw-bold">Filter by Role</label>
+                            <select class="form-select form-select-lg filter-select" id="filterRole">
+                                <option value="">All Roles</option>
+                                <option value="seeker">Seeker</option>
+                                <option value="host">Host</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Reset Button -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button class="btn btn-outline-secondary" id="resetFiltersBtn">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Reset Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- People Grid -->
+        <section class="py-5">
+            <div class="container">
+                <div class="row g-4" id="peopleGrid">
+                    <!-- People cards will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer will be auto-loaded here -->
+    <footer id="footer-container"></footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Global JS -->
+    <script src="/public/js/global.js"></script>
+    
+    <!-- Page JS -->
+    <script src="./script.js"></script>
+</body>
+</html>
