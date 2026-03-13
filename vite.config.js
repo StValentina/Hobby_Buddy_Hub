@@ -17,6 +17,7 @@ export default defineConfig({
         dashboard: resolve(__dirname, 'pages/dashboard/index.html'),
         index: resolve(__dirname, 'pages/index/index.html'),
         hobbies: resolve(__dirname, 'pages/hobbies/index.html'),
+        events: resolve(__dirname, 'pages/events/index.html'),
         // Add more pages here as needed
         // login: resolve(__dirname, 'pages/login/index.html'),
         // register: resolve(__dirname, 'pages/register/index.html'),

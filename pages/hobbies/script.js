@@ -54,7 +54,7 @@ const hobbiesData = [
     },
     {
         id: 7,
-        name: 'Literature',
+        name: 'Reading',
         description: 'Read, discuss, and analyze books with passionate readers.',
         category: 'intellectual',
         icon: '📚',
