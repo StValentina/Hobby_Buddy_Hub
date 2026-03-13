@@ -1,0 +1,145 @@
+/* Hobbies Page Styles */
+
+.page-header {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.page-header h1 {
+    color: #212529;
+}
+
+.page-header .lead {
+    font-size: 1.1rem;
+}
+
+/* Hobby Card Styles */
+.hobby-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: white;
+}
+
+.hobby-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border-color: #667eea;
+}
+
+.hobby-card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 3rem;
+}
+
+.hobby-card-body {
+    padding: 1.5rem;
+    flex: 1;
+}
+
+.hobby-card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #212529;
+}
+
+.hobby-card-description {
+    font-size: 0.95rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.hobby-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.hobby-tag {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    font-size: 0.85rem;
+    color: #495057;
+}
+
+.hobby-tag:hover {
+    background-color: #e9ecef;
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.hobby-card-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #f1f3f5;
+    background-color: #f8f9fa;
+    margin-top: auto;
+}
+
+.hobby-card-footer .btn {
+    width: 100%;
+}
+
+.hobby-card-footer .btn-primary {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+.hobby-card-footer .btn-primary:hover {
+    background-color: #764ba2;
+    border-color: #764ba2;
+}
+
+/* Search and Filter */
+.form-control-lg,
+.form-select-lg {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+}
+
+/* No results message */
+.no-results {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.no-results i {
+    font-size: 3rem;
+    color: #dee2e6;
+    margin-bottom: 1rem;
+}
+
+.no-results h3 {
+    color: #6c757d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page-header h1 {
+        font-size: 2rem;
+    }
+
+    .hobby-card-image {
+        height: 150px;
+        font-size: 2rem;
+    }
+
+    .hobby-card-body {
+        padding: 1rem;
+    }
+}
