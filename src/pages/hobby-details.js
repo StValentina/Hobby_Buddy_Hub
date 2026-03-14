@@ -241,9 +241,15 @@ function renderHobbyDetails(hobby) {
     // Hero section
     document.getElementById('hobbyHero').style.background = `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`;
     
-    // Generate icon if not provided
-    const icon = hobby.icon || generateHobbyIcon(hobby.name);
-    document.getElementById('hobbyIcon').textContent = icon;
+    // Display hobby image if available, or icon as fallback
+    const hobbyIconElement = document.getElementById('hobbyIcon');
+    if (hobby.image_url) {
+        hobbyIconElement.innerHTML = `<img src="${hobby.image_url}" alt="${hobby.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+    } else {
+        const icon = hobby.icon || generateHobbyIcon(hobby.name);
+        hobbyIconElement.textContent = icon;
+    }
+    
     document.getElementById('hobbyTitle').textContent = hobby.name;
 
     // Description

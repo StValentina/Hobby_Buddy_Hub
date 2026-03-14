@@ -94,7 +94,7 @@ export class Header {
               <i class="bi bi-speedometer2 me-2"></i>Dashboard
             </a></li>
             ${adminDropdownItem}
-            <li><a class="dropdown-item" href="#">
+            <li><a class="dropdown-item" onclick="showSettingsModal(event)">
               <i class="bi bi-gear me-2"></i>Settings
             </a></li>
             <li><hr class="dropdown-divider"></li>

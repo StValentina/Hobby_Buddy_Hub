@@ -102,12 +102,18 @@ function renderHobbies(hobbies) {
         return;
     }
 
-    grid.innerHTML = hobbies.map(hobby => `
+    grid.innerHTML = hobbies.map(hobby => {
+        // Determine image display
+        const imageContent = hobby.image_url 
+            ? `<img src="${hobby.image_url}" alt="${hobby.name}" style="width: 100%; height: 100%; object-fit: cover;">`
+            : `<div style="display: flex; align-items: center; justify-content: center; height: 100%;">${hobby.icon}</div>`;
+
+        return `
         <div class="col-lg-3 col-md-6">
             <a href="/pages/hobby-details.html?id=${hobby.id}" class="hobby-card-link">
                 <div class="hobby-card">
                     <div class="hobby-card-image">
-                        ${hobby.icon}
+                        ${imageContent}
                     </div>
                     <div class="hobby-card-body">
                         <h5 class="hobby-card-title">${hobby.name}</h5>
@@ -124,7 +130,8 @@ function renderHobbies(hobbies) {
                 </div>
             </a>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 /**

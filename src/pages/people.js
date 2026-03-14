@@ -4,6 +4,18 @@
 
 import { apiService } from '/src/services/api.js';
 
+// Get error message for unregistered users
+function getErrorMessage(pageType = 'People') {
+    return `
+        <div class="container text-center py-5">
+            <h2>You Are Not Registered</h2>
+            <p>Please register or log in to find and connect with people.</p>
+            <a href="/pages/auth/register.html" class="btn btn-primary me-2">Register</a>
+            <a href="/pages/auth/login.html" class="btn btn-outline-primary">Log In</a>
+        </div>
+    `;
+}
+
 // All people data
 let allPeople = [];
 
@@ -26,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // People directory is available only to authenticated users.
     if (!apiService.isAuthenticated()) {
-        window.location.href = '/pages/auth/login.html';
+        document.querySelector('main').innerHTML = getErrorMessage();
         return;
     }
 
@@ -39,9 +51,12 @@ document.addEventListener('DOMContentLoaded', async () => {
  */
 async function loadPeople() {
     try {
+        const currentUser = apiService.getCurrentUser();
         const profiles = await apiService.getAllProfiles();
-        allPeople = profiles;
-        filteredPeople = profiles;
+        
+        // Filter out the current logged-in user
+        allPeople = profiles.filter(profile => profile.id !== currentUser?.id);
+        filteredPeople = allPeople;
         renderPeople(filteredPeople);
     } catch (error) {
         console.error('Failed to load people:', error);
@@ -157,11 +172,17 @@ function renderPeople(people) {
         const colorIndex = person.id % colors.length;
         const gradient = `linear-gradient(135deg, ${colors[colorIndex]} 0%, ${colors[(colorIndex + 1) % colors.length]} 100%)`;
 
+        // Determine avatar display
+        const avatarContent = person.avatar_url 
+            ? `<img src="${person.avatar_url}" alt="${person.name}" class="person-avatar-image" style="width: 100%; height: 100%; object-fit: cover;">`
+            : `<span class="person-avatar-icon"><i class="bi bi-person-fill"></i></span>`;
+        const avatarStyle = person.avatar_url ? '' : `style="background: ${gradient};"`;
+
         return `
             <div class="col-lg-4 col-md-6">
                 <div class="person-card">
-                    <div class="person-card-avatar" style="background: ${gradient};">
-                        <span class="person-avatar-icon"><i class="bi bi-person-fill"></i></span>
+                    <div class="person-card-avatar" ${avatarStyle}>
+                        ${avatarContent}
                         <span class="role-badge">${person.role === 'host' ? '🎯 Host' : '🔍 Seeker'}</span>
                     </div>
                     <div class="person-card-body">

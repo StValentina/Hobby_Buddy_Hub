@@ -62,9 +62,15 @@
 }
 
 .hobby-icon {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 80px;
     margin-bottom: 20px;
+    width: 200px;
+    height: 200px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .hobby-title {

@@ -4,6 +4,15 @@
 
 import { apiService } from '/src/services/api.js';
 
+// Global function to show settings modal (can be called from header)
+window.showSettingsModal = function(event) {
+    event.preventDefault();
+    const modal = document.getElementById('settingsModal');
+    if (modal && window.settingsModal) {
+        window.settingsModal.show();
+    }
+};
+
 // User profile data loaded from database
 let userProfile = null;
 let allHobbies = []; // All available hobbies
@@ -46,6 +55,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!apiService.isAuthenticated()) {
         window.location.href = '/pages/auth/login.html';
         return;
+    }
+    
+    // Initialize settings modal
+    const settingsModalElement = document.getElementById('settingsModal');
+    if (settingsModalElement) {
+        window.settingsModal = new bootstrap.Modal(settingsModalElement);
     }
     
     // Check if viewing another user's profile
