@@ -282,7 +282,7 @@ class APIService {
       if (!response.ok) {
         const error = await response.json();
         console.error('Registration error response:', error);
-        throw new Error(error.message || error.error_description || `Registration failed (${response.status})`);
+        throw new Error(error.msg || error.message || error.error_description || `Registration failed (${response.status})`);
       }
 
       const data = await response.json();
@@ -321,7 +321,7 @@ class APIService {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error_description || error.message || 'Login failed');
+        throw new Error(error.msg || error.error_description || error.message || 'Login failed');
       }
 
       const data = await response.json();
