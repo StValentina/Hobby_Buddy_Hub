@@ -14,7 +14,7 @@ The schema is designed to support:
 - activity locations
 - role-based permissions
 - file uploads
-- tags for hobbies and events
+- tags for hobbies
 
 ---
 
@@ -597,3 +597,49 @@ Admins can:
 1. App fetches `profiles`
 2. App fetches related hobbies and events
 
+---
+
+## Implementation Status
+
+### ✅ Completed
+
+- SQL schema fully designed with all tables, relationships, and constraints
+- 5 migration files created in `supabase/migrations/`:
+  - `001_enums_and_base_tables.sql` – Enums, profiles, user_roles, hobbies, tags
+  - `002_junction_and_relationship_tables.sql` – user_hobbies, hobby_tags, locations, events, event_tags, event_participants
+  - `003_auth_triggers.sql` – Auto-create profiles on signup, auto-assign default roles, update timestamps
+  - `004_rls_policies.sql` – Fine-grained row-level security for all tables
+  - `005_seed_data.sql` – Initial hobbies (15), tags (20), and locations (10) with relationships
+- Migration runner script created (`scripts/migrate.js`)
+- npm script added: `npm run db:setup`
+
+### ⏭️ Next Steps
+
+1. **Install dependencies**: `npm install` (adds `dotenv` for migration runner)
+2. **Configure Supabase credentials** in `.env.local`:
+   ```
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_KEY=your-public-key
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # For migrations
+   ```
+3. **Run migrations**: `npm run db:setup`
+4. **Verify schema**: Check Supabase dashboard for tables and RLS policies
+5. **Test auth trigger**: Create a user via Supabase Auth UI, verify profile auto-created
+
+### Schema Improvements Applied
+
+**Event Participation Status**: Uses PostgreSQL enum `event_participation_status` instead of plain text. Values: `joined`, `cancelled`, `pending`.
+
+This improves data integrity by enforcing valid status values at the database level rather than relying on application validation.
+
+### Production Considerations
+
+- **Service Role Key**: Migration script uses `SUPABASE_SERVICE_ROLE_KEY` for full permissions. Keep this secret and use only for migrations.
+- **Migration Idempotency**: Migrations are designed to be idempotent where possible (e.g., `CREATE TABLE IF NOT EXISTS`).
+- **Audit Trail**: The `_schema_migrations` table tracks applied migrations. Never manually edit this table.
+- **RLS Policies**: All tables have RLS enabled. Policies follow the principle of least privilege:
+  - Public tables (hobbies, tags, locations) are readable by all
+  - User data (profiles, hobbies) are user-controlled
+  - Events and participants follow host/seeker/admin hierarchy
+- **Performance**: Indexes created on all foreign keys and frequently queried columns
+- **Backup**: Always test migrations on a development branch first

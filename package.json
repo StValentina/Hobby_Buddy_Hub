@@ -7,15 +7,20 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "db:setup": "node scripts/migrate.js",
+    "db:reset": "echo 'Manual reset: Delete all tables from Supabase dashboard, then run npm run db:setup'"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.38.0",
     "bootstrap": "^5.3.0",
-    "bootstrap-icons": "^1.11.0"
+    "bootstrap-icons": "^1.11.0",
+    "pg": "^8.20.0"
   },
   "devDependencies": {
     "@vitejs/plugin-basic-ssl": "^1.0.1",
+    "dotenv": "^16.0.0",
+    "supabase": "^2.78.1",
     "vite": "^5.0.0"
   }
 }
