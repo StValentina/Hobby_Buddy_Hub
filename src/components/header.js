@@ -86,7 +86,7 @@ export class Header {
           >
             <i class="bi bi-person-circle me-1"></i>${userDisplayName}
           </a>
-          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
             <li><a class="dropdown-item" href="/pages/profile.html">
               <i class="bi bi-person me-2"></i>Profile
             </a></li>
@@ -192,9 +192,7 @@ export class Header {
     // Bootstrap dropdowns should auto-initialize, but we can add additional event handling if needed
     const dropdowns = this.container.querySelectorAll('[data-bs-toggle="dropdown"]');
     dropdowns.forEach(dropdown => {
-      dropdown.addEventListener('click', (e) => {
-        e.preventDefault();
-      });
+      // allow Bootstrap to handle click/toggle behavior; keep listener placeholder for future hooks
     });
   }
 

@@ -548,6 +548,34 @@ class APIService {
   }
 
   /**
+   * Create user profile (called after registration)
+   */
+  async createUserProfile(userId, fullName, email) {
+    try {
+      console.log(`Creating profile for user ${userId}...`);
+
+      const profileData = {
+        id: userId,
+        full_name: fullName || email.split('@')[0],
+        email: email
+      };
+
+      const result = await this.post('/profiles', [profileData], {
+        headers: {
+          'Prefer': 'return=representation'
+        }
+      });
+
+      console.log('Profile created:', result);
+      return Array.isArray(result) ? result[0] : result;
+    } catch (error) {
+      console.error(`Failed to create profile for user ${userId}:`, error);
+      // Don't throw - profile might already exist from trigger
+      return null;
+    }
+  }
+
+  /**
    * Get user profile information
    */
   async getProfile(userId) {
@@ -703,6 +731,168 @@ class APIService {
       return result;
     } catch (error) {
       console.error(`Failed to update role for user ${userId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Admin: list hobbies for management
+   */
+  async getAdminHobbies() {
+    try {
+      const rows = await this.get('/hobbies?select=id,name,description,image_url,created_at&order=created_at.desc');
+      return Array.isArray(rows) ? rows : [];
+    } catch (error) {
+      console.error('Failed to fetch admin hobbies:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Admin: create hobby
+   */
+  async createHobby(hobbyData) {
+    try {
+      const result = await this.post(
+        '/hobbies',
+        [hobbyData],
+        {
+          headers: {
+            'Prefer': 'return=representation'
+          }
+        }
+      );
+
+      return Array.isArray(result) ? result[0] : result;
+    } catch (error) {
+      console.error('Failed to create hobby:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Admin: update hobby
+   */
+  async updateHobby(hobbyId, updateData) {
+    try {
+      const result = await this.patch(
+        `/hobbies?id=eq.${encodeURIComponent(hobbyId)}`,
+        updateData,
+        {
+          headers: {
+            'Prefer': 'return=representation'
+          }
+        }
+      );
+      return Array.isArray(result) ? result[0] : result;
+    } catch (error) {
+      console.error(`Failed to update hobby ${hobbyId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Admin: delete hobby
+   */
+  async deleteHobby(hobbyId) {
+    try {
+      await this.delete(`/hobbies?id=eq.${encodeURIComponent(hobbyId)}`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to delete hobby ${hobbyId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Admin: list events for management
+   */
+  async getAdminEvents() {
+    try {
+      const rows = await this.get('/events?select=id,title,description,event_date,max_participants,host_id,hobby_id,location_id,hobbies(name),locations(city,address),profiles(full_name,email)&order=event_date.desc');
+      return Array.isArray(rows) ? rows : [];
+    } catch (error) {
+      console.error('Failed to fetch admin events:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Admin: create event with direct hobby/location IDs
+   */
+  async createAdminEvent(eventData) {
+    try {
+      const payload = {
+        ...eventData,
+        updated_at: new Date().toISOString()
+      };
+
+      const result = await this.post(
+        '/events',
+        [payload],
+        {
+          headers: {
+            'Prefer': 'return=representation'
+          }
+        }
+      );
+
+      return Array.isArray(result) ? result[0] : result;
+    } catch (error) {
+      console.error('Failed to create admin event:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Admin: update event
+   */
+  async updateEvent(eventId, updateData) {
+    try {
+      const payload = {
+        ...updateData,
+        updated_at: new Date().toISOString()
+      };
+
+      const result = await this.patch(
+        `/events?id=eq.${encodeURIComponent(eventId)}`,
+        payload,
+        {
+          headers: {
+            'Prefer': 'return=representation'
+          }
+        }
+      );
+
+      return Array.isArray(result) ? result[0] : result;
+    } catch (error) {
+      console.error(`Failed to update event ${eventId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Admin: delete event
+   */
+  async deleteEvent(eventId) {
+    try {
+      await this.delete(`/events?id=eq.${encodeURIComponent(eventId)}`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to delete event ${eventId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all locations
+   */
+  async getLocations() {
+    try {
+      const rows = await this.get('/locations?select=id,name,city,address&order=city.asc');
+      return Array.isArray(rows) ? rows : [];
+    } catch (error) {
+      console.error('Failed to fetch locations:', error);
       throw error;
     }
   }

@@ -13,3 +13,111 @@
 .save-role-btn {
     min-width: 72px;
 }
+
+/* Enhanced Tab Navigation */
+.admin-tabs {
+    gap: 1.5rem;
+}
+
+.nav-pills .nav-link {
+    border-radius: 8px;
+    padding: 0.4rem 0.7rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    color: #ffffff !important;
+    background-color: #4facfe !important;
+    opacity: 0.7;
+    /* display: inline-block;  Removed to prevent global nav-link dropdown breakage */
+}
+
+.nav-pills .nav-link:hover {
+    background-color: #2d8fe8 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(47, 143, 232, 0.3);
+    opacity: 0.9;
+}
+
+.nav-pills .nav-link.active {
+    padding: 0.5rem 0.85rem !important;
+    font-weight: 600;
+    border-radius: 8px;
+    color: #ffffff !important;
+    background-color: #1a5ba8 !important;
+    box-shadow: 0 4px 15px rgba(26, 91, 168, 0.4);
+    opacity: 1;
+    font-size: 0.9rem !important;
+}
+
+/* Card styling */
+.card {
+    border-radius: 12px;
+}
+
+.hobbies-card {
+    border: 1px solid rgba(245, 87, 108, 0.15);
+}
+
+.events-card {
+    border: 1px solid rgba(79, 172, 254, 0.15);
+}
+
+/* Gradient backgrounds for card headers */
+.bg-gradient-hobbies {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+    padding: 1.25rem;
+    border-radius: 12px 12px 0 0;
+}
+
+.bg-gradient-events {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+    padding: 1.25rem;
+    border-radius: 12px 12px 0 0;
+}
+
+.card-header {
+    padding: 1.25rem;
+}
+
+.card-header h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Action buttons */
+.actions-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.actions-group .btn {
+    min-width: 68px;
+}
+
+.truncate-cell {
+    max-width: 420px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Table enhancements */
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.btn-light {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    font-weight: 500;
+}
+
+.btn-light:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #fff;
+}

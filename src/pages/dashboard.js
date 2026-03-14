@@ -32,6 +32,15 @@ async function loadDashboardData() {
             return;
         }
         
+        // Get user role and hide Create Event button + My Events card if seeker
+        const userRole = await apiService.getUserRole(currentUser.id);
+        const createEventBtn = document.querySelector('a[href="/pages/create-event.html"]');
+        const myEventsCard = document.getElementById('myEventsCard');
+        if (userRole === 'seeker') {
+            if (createEventBtn) createEventBtn.style.display = 'none';
+            if (myEventsCard) myEventsCard.parentElement.style.display = 'none';
+        }
+        
         // Load all data in parallel
         const [hobbiesResult, eventsJoinedResult, upcomingEventsResult, hostedEventsResult] = await Promise.allSettled([
             apiService.getUserHobbies(currentUser.id),

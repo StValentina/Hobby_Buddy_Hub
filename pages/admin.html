@@ -24,37 +24,293 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h1 class="fw-bold mb-1"><i class="bi bi-shield-lock me-2"></i>Admin Panel</h1>
-                    <p class="text-muted mb-0">Manage user roles (seeker, host, admin)</p>
+                    <p class="text-muted mb-0">Manage users, hobbies, and events</p>
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom">
-                    <strong>Users and Roles</strong>
+            <ul class="nav nav-pills mb-4 admin-tabs" id="adminTabNav" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="users-tab" data-bs-toggle="pill" data-bs-target="#users-pane" type="button" role="tab" aria-controls="users-pane" aria-selected="true">
+                        <i class="bi bi-people me-1"></i>Users & Roles
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="hobbies-tab" data-bs-toggle="pill" data-bs-target="#hobbies-pane" type="button" role="tab" aria-controls="hobbies-pane" aria-selected="false">
+                        <i class="bi bi-stars me-1"></i>Hobbies
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="events-tab" data-bs-toggle="pill" data-bs-target="#events-pane" type="button" role="tab" aria-controls="events-pane" aria-selected="false">
+                        <i class="bi bi-calendar-event me-1"></i>Events
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="adminTabContent">
+                <div class="tab-pane fade show active" id="users-pane" role="tabpanel" aria-labelledby="users-tab" tabindex="0">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-bottom">
+                            <strong>Users and Roles</strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table align-middle table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Current Role</th>
+                                            <th>Change Role</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminUsersTbody">
+                                        <tr>
+                                            <td colspan="5" class="text-muted py-4">Loading users...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table align-middle table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Current Role</th>
-                                    <th>Change Role</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminUsersTbody">
-                                <tr>
-                                    <td colspan="5" class="text-muted py-4">Loading users...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+
+                <div class="tab-pane fade" id="hobbies-pane" role="tabpanel" aria-labelledby="hobbies-tab" tabindex="0">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                            <strong>Hobbies Management</strong>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-primary" id="openCreateHobbyBtn">
+                                    <i class="bi bi-plus-circle me-1"></i>New Hobby
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" id="refreshHobbiesBtn">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table align-middle table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Description</th>
+                                            <th>Created</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminHobbiesTbody">
+                                        <tr>
+                                            <td colspan="4" class="text-muted py-4">Loading hobbies...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="events-pane" role="tabpanel" aria-labelledby="events-tab" tabindex="0">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                            <strong>Events Management</strong>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-primary" id="openCreateEventBtn">
+                                    <i class="bi bi-plus-circle me-1"></i>New Event
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" id="refreshEventsBtn">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table align-middle table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Date</th>
+                                            <th>Category</th>
+                                            <th>Location</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminEventsTbody">
+                                        <tr>
+                                            <td colspan="5" class="text-muted py-4">Loading events...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </main>
+
+    <!-- View Modal -->
+    <div class="modal fade" id="adminViewModal" tabindex="-1" aria-labelledby="adminViewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="adminViewModalLabel">Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="adminViewModalBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Hobby Modal -->
+    <div class="modal fade" id="createHobbyModal" tabindex="-1" aria-labelledby="createHobbyModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createHobbyModalLabel">Create New Hobby</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="createHobbyName" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="createHobbyName" maxlength="100" placeholder="Enter hobby name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="createHobbyDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="createHobbyDescription" rows="4" placeholder="Describe the hobby"></textarea>
+                    </div>
+                    <div class="mb-0">
+                        <label for="createHobbyImageUrl" class="form-label">Image URL</label>
+                        <input type="url" class="form-control" id="createHobbyImageUrl" placeholder="https://...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="createHobbyBtn">Create Hobby</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Hobby Modal -->
+    <div class="modal fade" id="editHobbyModal" tabindex="-1" aria-labelledby="editHobbyModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editHobbyModalLabel">Edit Hobby</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editHobbyId">
+                    <div class="mb-3">
+                        <label for="editHobbyName" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="editHobbyName" maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editHobbyDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="editHobbyDescription" rows="4"></textarea>
+                    </div>
+                    <div class="mb-0">
+                        <label for="editHobbyImageUrl" class="form-label">Image URL</label>
+                        <input type="url" class="form-control" id="editHobbyImageUrl" placeholder="https://...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveHobbyBtn">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Event Modal -->
+    <div class="modal fade" id="createEventModal" tabindex="-1" aria-labelledby="createEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createEventModalLabel">Create New Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label for="createEventTitle" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="createEventTitle" maxlength="120" placeholder="Enter event title">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="createEventMaxParticipants" class="form-label">Max Participants</label>
+                            <input type="number" class="form-control" id="createEventMaxParticipants" min="1" value="10">
+                        </div>
+                        <div class="col-12">
+                            <label for="createEventDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="createEventDescription" rows="3" placeholder="Describe the event"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="createEventDateTime" class="form-label">Date & Time</label>
+                            <input type="datetime-local" class="form-control" id="createEventDateTime">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="createEventHobby" class="form-label">Hobby</label>
+                            <select class="form-select" id="createEventHobby"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="createEventLocation" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="createEventLocation" placeholder="Type location name or city">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="createEventBtn">Create Event</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Event Modal -->
+    <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editEventId">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label for="editEventTitle" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="editEventTitle" maxlength="120">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="editEventMaxParticipants" class="form-label">Max Participants</label>
+                            <input type="number" class="form-control" id="editEventMaxParticipants" min="1">
+                        </div>
+                        <div class="col-12">
+                            <label for="editEventDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editEventDescription" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="editEventDateTime" class="form-label">Date & Time</label>
+                            <input type="datetime-local" class="form-control" id="editEventDateTime">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="editEventHobby" class="form-label">Hobby</label>
+                            <select class="form-select" id="editEventHobby"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="editEventLocation" class="form-label">Location</label>
+                            <select class="form-select" id="editEventLocation"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveEventBtn">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <footer id="footer-container"></footer>
 

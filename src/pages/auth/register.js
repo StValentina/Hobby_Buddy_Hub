@@ -207,13 +207,45 @@ form.addEventListener('submit', async (e) => {
         const response = await apiService.register(email, password, fullName);
         
         console.log('Registration successful:', response);
+        console.log('Auth token after registration:', localStorage.getItem('auth_token') ? 'TOKEN STORED' : 'NO TOKEN');
         
-        showAlert('Account created successfully! Redirecting...', 'success');
-        
-        // Redirect to home page after 1.5 seconds
+        // Ensure we have a usable token. If signup did not return a session, try logging in.
+        let token = localStorage.getItem('auth_token');
+        if (!token) {
+            try {
+                console.log('No token after signup; attempting to login to obtain token...');
+                await apiService.login(email, password);
+                token = localStorage.getItem('auth_token');
+                console.log('Token after login attempt:', token ? 'FOUND' : 'MISSING');
+            } catch (loginErr) {
+                console.warn('Auto-login after signup failed:', loginErr);
+            }
+        }
+
+        if (!token) {
+            // Account created but could not sign in automatically.
+            showAlert('Account created. Please sign in to continue.', 'success');
+            setTimeout(() => {
+                window.location.href = '/pages/auth/login.html';
+            }, 1000);
+            return;
+        }
+
+        // Get userId from token payload and ensure profile exists
+        const user = apiService.getCurrentUser();
+        if (user && user.id) {
+            try {
+                await apiService.createUserProfile(user.id, fullName, email);
+                console.log('User profile created/verified');
+            } catch (profileError) {
+                console.warn('Profile creation warning (may already exist):', profileError);
+            }
+        }
+
+        showAlert('Account created successfully! Redirecting to dashboard...', 'success');
         setTimeout(() => {
-            window.location.href = '/';
-        }, 1500);
+            window.location.href = '/pages/dashboard.html';
+        }, 800);
         
     } catch (error) {
         console.error('Registration failed:', error);
