@@ -8,6 +8,14 @@ import { apiService } from '/src/services/api.js';
 let userProfile = null;
 let allHobbies = []; // All available hobbies
 let selectedHobbyIds = []; // Currently selected hobbies by user
+let isViewingOtherProfile = false; // Flag to indicate if viewing another user's profile
+let viewedUserId = null; // ID of the user being viewed
+
+// Get user ID from URL parameters
+function getViewedUserIdFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('viewUserId');
+}
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', async () => {
@@ -19,6 +27,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
+    // Check if viewing another user's profile
+    viewedUserId = getViewedUserIdFromURL();
+    if (viewedUserId) {
+        isViewingOtherProfile = true;
+    }
+    
     await loadUserProfile();
     setupEventListeners();
 });
@@ -28,15 +42,24 @@ document.addEventListener('DOMContentLoaded', async () => {
  */
 async function loadUserProfile() {
     try {
-        const currentUser = apiService.getCurrentUser();
-        if (!currentUser) {
-            console.error('No current user found');
-            window.location.href = '/pages/auth/login.html';
-            return;
+        let userId;
+        
+        if (isViewingOtherProfile) {
+            // Load profile of viewed user
+            userId = viewedUserId;
+        } else {
+            // Load current user's profile
+            const currentUser = apiService.getCurrentUser();
+            if (!currentUser) {
+                console.error('No current user found');
+                window.location.href = '/pages/auth/login.html';
+                return;
+            }
+            userId = currentUser.id;
         }
         
         // Fetch profile data
-        const profileData = await apiService.getProfile(currentUser.id);
+        const profileData = await apiService.getProfile(userId);
         
         if (!profileData) {
             console.error('Profile not found');
@@ -46,10 +69,10 @@ async function loadUserProfile() {
         
         // Load secondary profile data without failing the whole page if one request errors.
         const [hobbiesResult, eventsCountResult, allHobbiesResult, upcomingEventsResult] = await Promise.allSettled([
-            apiService.getUserHobbies(currentUser.id),
-            apiService.getEventsJoinedCount(currentUser.id),
+            apiService.getUserHobbies(userId),
+            apiService.getEventsJoinedCount(userId),
             apiService.getHobbies(),
-            apiService.getUpcomingEvents(currentUser.id),
+            isViewingOtherProfile ? Promise.resolve([]) : apiService.getUpcomingEvents(userId),
         ]);
 
         const hobbies = hobbiesResult.status === 'fulfilled' ? hobbiesResult.value : [];
@@ -60,8 +83,8 @@ async function loadUserProfile() {
         
         // Construct user profile object
         userProfile = {
-            id: currentUser.id,
-            email: profileData.email || currentUser.email,
+            id: userId,
+            email: profileData.email || 'Not displayed',
             name: profileData.full_name || 'User',
             city: profileData.city || '',
             bio: profileData.bio || '',
@@ -72,9 +95,6 @@ async function loadUserProfile() {
             connections: 0 // TODO: fetch from connections
         };
         
-        console.log('User profile loaded:', userProfile);
-        console.log('All hobbies available:', allHobbies);
-        console.log('Upcoming events:', upcomingEvents);
         displayProfileInfo(userProfile);
         displayHobbies(userProfile.hobbies);
         displayUpcomingEvents(upcomingEvents);
@@ -98,14 +118,12 @@ function displayProfileInfo(profile) {
     // Display avatar if available
     const avatarDisplay = document.getElementById('avatarDisplay');
     if (profile.avatar_url) {
-        console.log('Displaying avatar from URL:', profile.avatar_url);
         avatarDisplay.innerHTML = ''; // Clear icon
         avatarDisplay.style.background = ''; // Clear gradient background
         avatarDisplay.style.backgroundImage = `url('${profile.avatar_url}')`;
         avatarDisplay.style.backgroundSize = 'cover';
         avatarDisplay.style.backgroundPosition = 'center';
     } else {
-        console.log('No avatar URL, using default gradient');
         // Use default gradient if no avatar
         avatarDisplay.innerHTML = '<i class="bi bi-person-fill"></i>'; // Show icon
         const colors = ['#667eea', '#764ba2'];
@@ -185,6 +203,19 @@ function setupEventListeners() {
     const editHobbiesBtn = document.getElementById('editHobbiesBtn');
     const saveHobbiesBtn = document.getElementById('saveHobbiesBtn');
     const cancelHobbiesBtn = document.getElementById('cancelHobbiesBtn');
+
+    // Hide edit controls if viewing another profile
+    if (isViewingOtherProfile) {
+        editProfileBtn.style.display = 'none';
+        changeAvatarBtn.style.display = 'none';
+        deleteAccountBtn.style.display = 'none';
+        editHobbiesBtn.style.display = 'none';
+        const dangerZone = document.querySelector('.danger-zone');
+        if (dangerZone) {
+            dangerZone.style.display = 'none';
+        }
+        return;
+    }
 
     // Edit profile button
     editProfileBtn.addEventListener('click', showEditForm);
@@ -316,12 +347,8 @@ async function saveHobbiesChanges() {
         const checkedBoxes = document.querySelectorAll('.hobby-checkbox:checked');
         const newSelectedHobbyIds = Array.from(checkedBoxes).map(checkbox => checkbox.dataset.hobbyId);
 
-        console.log('Saving hobbies:', newSelectedHobbyIds);
-        console.log('User ID:', userProfile.id);
-
         // Update user hobbies in database
         const result = await apiService.updateUserHobbies(userProfile.id, newSelectedHobbyIds);
-        console.log('Update hobbies result:', result);
 
         // Update local state
         selectedHobbyIds = newSelectedHobbyIds;
@@ -360,10 +387,6 @@ async function saveProfileChanges() {
     }
 
     try {
-        console.log('Saving profile changes...');
-        console.log('User ID:', userProfile.id);
-        console.log('Auth token exists:', !!apiService.authToken);
-        
         // Prepare update data
         const updateData = {
             full_name: newName,
@@ -371,11 +394,8 @@ async function saveProfileChanges() {
             bio: newBio || null
         };
         
-        console.log('Update data:', updateData);
-        
         // Save to database
         const result = await apiService.updateProfile(userProfile.id, updateData);
-        console.log('Update result:', result);
         
         // Update local profile object
         userProfile.name = newName;
@@ -391,9 +411,7 @@ async function saveProfileChanges() {
         // Hide form
         hideEditForm();
     } catch (error) {
-        console.error('Failed to save profile changes - Full error:', error);
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
+        console.error('Failed to save profile changes:', error.message);
         showErrorMessage(`Failed to save changes: ${error.message}`);
     }
 }
@@ -456,11 +474,8 @@ function handleChangeAvatar() {
     fileInput.addEventListener('change', async (event) => {
         const file = event.target.files[0];
         if (!file) {
-            console.log('No file selected');
             return;
         }
-        
-        console.log('File selected:', file.name, file.size, file.type);
         
         // Show loading state
         const changeAvatarBtn = document.getElementById('changeAvatarBtn');
@@ -470,9 +485,7 @@ function handleChangeAvatar() {
         
         try {
             // Upload avatar
-            console.log('Starting avatar upload...');
             const uploadResult = await apiService.uploadProfileAvatar(currentUser.id, file);
-            console.log('Upload result:', uploadResult);
             
             // Display uploaded avatar
             const avatarDisplay = document.getElementById('avatarDisplay');
@@ -483,9 +496,8 @@ function handleChangeAvatar() {
             avatarDisplay.style.backgroundPosition = 'center';
             
             showSuccessMessage('✅ Avatar uploaded successfully!');
-            console.log('Avatar displayed:', uploadResult.url);
         } catch (error) {
-            console.error('Avatar upload failed:', error);
+            console.error('Avatar upload failed:', error.message);
             showErrorMessage(`Failed to upload avatar: ${error.message}`);
         } finally {
             changeAvatarBtn.disabled = false;

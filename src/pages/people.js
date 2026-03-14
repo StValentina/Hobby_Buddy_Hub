@@ -2,144 +2,10 @@
  * People Page JavaScript
  */
 
-// Sample people data
-const peopleData = [
-    {
-        id: 1,
-        name: 'Maria Garcia',
-        city: 'Sofia',
-        bio: 'Adventure seeker and outdoor enthusiast. Love hiking and exploring new trails.',
-        hobbies: ['Hiking', 'Photography', 'Traveling'],
-        role: 'seeker',
-        avatar: 'MG'
-    },
-    {
-        id: 2,
-        name: 'Alex Petrov',
-        city: 'Burgas',
-        bio: 'Professional photographer and art lover. Always looking for new perspectives.',
-        hobbies: ['Photography', 'Painting', 'Traveling'],
-        role: 'host',
-        avatar: 'AP'
-    },
-    {
-        id: 3,
-        name: 'Sofia Ivanova',
-        city: 'Varna',
-        bio: 'Passionate about cooking and sharing recipes. Food is life!',
-        hobbies: ['Cooking', 'Literature', 'Dancing'],
-        role: 'host',
-        avatar: 'SI'
-    },
-    {
-        id: 4,
-        name: 'James Wilson',
-        city: 'Sofia',
-        bio: 'Chess enthusiast and strategy game lover. Always up for a challenge.',
-        hobbies: ['Chess', 'Literature', 'Painting'],
-        role: 'seeker',
-        avatar: 'JW'
-    },
-    {
-        id: 5,
-        name: 'Elena Volkov',
-        city: 'Plovdiv',
-        bio: 'Dancer and movement enthusiast. Believe in the power of dance therapy.',
-        hobbies: ['Dancing', 'Traveling', 'Photography'],
-        role: 'host',
-        avatar: 'EV'
-    },
-    {
-        id: 6,
-        name: 'David Martinez',
-        city: 'Sofia',
-        bio: 'Fitness enthusiast and hiking lover. Connect with nature every weekend.',
-        hobbies: ['Hiking', 'Dancing', 'Chess'],
-        role: 'seeker',
-        avatar: 'DM'
-    },
-    {
-        id: 7,
-        name: 'Anna Sokolova',
-        city: 'Ruse',
-        bio: 'Artist and creative mind. Love painting and meeting like-minded creatives.',
-        hobbies: ['Painting', 'Photography', 'Literature'],
-        role: 'host',
-        avatar: 'AS'
-    },
-    {
-        id: 8,
-        name: 'Tom Brown',
-        city: 'Sofia',
-        bio: 'Book lover and literature enthusiast. Always reading something interesting.',
-        hobbies: ['Literature', 'Chess', 'Cooking'],
-        role: 'seeker',
-        avatar: 'TB'
-    },
-    {
-        id: 9,
-        name: 'Isabella Romano',
-        city: 'Burgas',
-        bio: 'Culinary expert and food blogger. Exploring flavors from around the world.',
-        hobbies: ['Cooking', 'Traveling', 'Photography'],
-        role: 'host',
-        avatar: 'IR'
-    },
-    {
-        id: 10,
-        name: 'Michael Chen',
-        city: 'Varna',
-        bio: 'Photographer and visual storyteller. Capturing moments and memories.',
-        hobbies: ['Photography', 'Hiking', 'Traveling'],
-        role: 'seeker',
-        avatar: 'MC'
-    },
-    {
-        id: 11,
-        name: 'Rachel Green',
-        city: 'Sofia',
-        bio: 'Yoga instructor and wellness coach. Promoting healthy living through movement.',
-        hobbies: ['Dancing', 'Painting', 'Literature'],
-        role: 'host',
-        avatar: 'RG'
-    },
-    {
-        id: 12,
-        name: 'Carlos Rodriguez',
-        city: 'Plovdiv',
-        bio: 'Music enthusiast and dancer. Love sharing Latin dance culture.',
-        hobbies: ['Dancing', 'Photography', 'Cooking'],
-        role: 'host',
-        avatar: 'CR'
-    },
-    {
-        id: 13,
-        name: 'Sophia Anderson',
-        city: 'Sofia',
-        bio: 'Fitness coach and healthy lifestyle advocate. Helping others achieve their goals.',
-        hobbies: ['Hiking', 'Dancing', 'Cooking'],
-        role: 'host',
-        avatar: 'SA'
-    },
-    {
-        id: 14,
-        name: 'Lucas Silva',
-        city: 'Burgas',
-        bio: 'Aviation enthusiast and travel blogger. Exploring the world one flight at a time.',
-        hobbies: ['Traveling', 'Photography', 'Literature'],
-        role: 'seeker',
-        avatar: 'LS'
-    },
-    {
-        id: 15,
-        name: 'Emma Thompson',
-        city: 'Varna',
-        bio: 'Creative writer and book club organizer. Passionate about storytelling.',
-        hobbies: ['Literature', 'Painting', 'Traveling'],
-        role: 'host',
-        avatar: 'ET'
-    }
-];
+import { apiService } from '/src/services/api.js';
+
+// All people data
+let allPeople = [];
 
 // Current filters
 let currentFilters = {
@@ -155,12 +21,30 @@ let currentPage = 1;
 let filteredPeople = [];
 
 // Initialize page
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     window.setActiveNav('Find People');
-    filteredPeople = peopleData;
-    renderPeople(filteredPeople);
+    await loadPeople();
     setupEventListeners();
 });
+
+/**
+ * Load people from Supabase
+ */
+async function loadPeople() {
+    try {
+        const profiles = await apiService.getAllProfiles();
+        allPeople = profiles;
+        filteredPeople = profiles;
+        renderPeople(filteredPeople);
+    } catch (error) {
+        console.error('Failed to load people:', error);
+        document.getElementById('peopleGrid').innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-danger">Failed to load people. Please try again.</div>
+            </div>
+        `;
+    }
+}
 
 /**
  * Setup filter event listeners
@@ -199,7 +83,7 @@ function setupEventListeners() {
  * Apply filters to people data
  */
 function applyFilters() {
-    const filtered = peopleData.filter(person => {
+    const filtered = allPeople.filter(person => {
         const nameMatch = person.name.toLowerCase().includes(currentFilters.name);
         const hobbyMatch = !currentFilters.hobby || person.hobbies.some(h => h.toLowerCase().includes(currentFilters.hobby));
         const cityMatch = !currentFilters.city || person.city.toLowerCase() === currentFilters.city;
@@ -229,9 +113,9 @@ function resetFilters() {
     document.getElementById('filterCity').value = '';
     document.getElementById('filterRole').value = '';
 
-    filteredPeople = peopleData;
+    filteredPeople = allPeople;
     currentPage = 1;
-    renderPeople(peopleData);
+    renderPeople(allPeople);
 }
 
 /**
@@ -288,7 +172,7 @@ function renderPeople(people) {
                         </div>
                     </div>
                     <div class="person-card-footer">
-                        <a href="/pages/profile.html" class="btn btn-view-profile">
+                        <a href="/pages/profile.html?viewUserId=${person.id}" class="btn btn-view-profile">
                             <i class="bi bi-eye me-2"></i>View Profile
                         </a>
                     </div>

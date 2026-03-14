@@ -842,6 +842,86 @@ class APIService {
       return [];
     }
   }
+
+  /**
+   * Get all profiles (users) with their hobbies
+   */
+  async getAllProfiles() {
+    try {
+      console.log('Fetching all user profiles...');
+      
+      const profiles = await this.get(
+        `/profiles?select=id,full_name,city,bio,avatar_url,user_hobbies(hobbies(id,name))`
+      );
+      
+      if (!profiles || profiles.length === 0) {
+        console.warn('No profiles found');
+        return [];
+      }
+      
+      console.log('Profiles fetched:', profiles);
+      
+      // Format profiles with hobbies
+      const formattedProfiles = profiles.map((profile, index) => ({
+        id: profile.id,
+        name: profile.full_name || 'User',
+        city: profile.city || 'Unknown',
+        bio: profile.bio || 'No bio yet',
+        avatar_url: profile.avatar_url,
+        hobbies: profile.user_hobbies ? profile.user_hobbies.map(uh => uh.hobbies?.name).filter(Boolean) : [],
+        role: index % 2 === 0 ? 'host' : 'seeker' // Alternate roles for demo
+      }));
+      
+      return formattedProfiles;
+    } catch (error) {
+      console.error('Failed to fetch profiles:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get event by ID with full details
+   */
+  async getEventById(eventId) {
+    try {
+      console.log(`Fetching event ${eventId}...`);
+      
+      const events = await this.get(
+        `/events?id=eq.${encodeURIComponent(eventId)}&select=id,title,description,event_date,hobbies(id,name),locations(id,city,address),profiles(id,full_name),event_participants(profile_id,profiles(full_name))`
+      );
+      
+      if (!events || events.length === 0) {
+        console.warn(`Event ${eventId} not found`);
+        return null;
+      }
+      
+      const event = events[0];
+      console.log('Event fetched:', event);
+      
+      const eventDate = new Date(event.event_date);
+      const maxParticipants = 20; // Default value
+      const currentParticipants = event.event_participants ? event.event_participants.length : 0;
+      
+      return {
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        category: event.hobbies?.name || 'Unknown',
+        location: event.locations?.city || 'TBD',
+        date: eventDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        time: eventDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        host: event.profiles?.full_name || 'Unknown',
+        maxParticipants: maxParticipants,
+        currentParticipants: currentParticipants,
+        difficulty: 'Beginner',
+        price: 'Free',
+        participants: event.event_participants ? event.event_participants.map(ep => ep.profiles?.full_name || 'Unknown') : []
+      };
+    } catch (error) {
+      console.error(`Failed to fetch event ${eventId}:`, error);
+      return null;
+    }
+  }
 }
 
 export const apiService = new APIService();
