@@ -2,19 +2,33 @@
  * Global utility functions
  */
 
+const componentCache = new Map();
+
 // Load HTML component (header/footer)
 export async function loadComponent(componentPath, containerId) {
   try {
-    const response = await fetch(componentPath);
-    const html = await response.text();
     const container = document.getElementById(containerId);
-    if (container) {
-      // Do not overwrite containers that were already rendered by dynamic JS components.
-      if (container.innerHTML.trim().length > 0) {
+    if (!container) {
+      return;
+    }
+
+    // Do not overwrite containers that were already rendered by dynamic JS components.
+    if (container.innerHTML.trim().length > 0) {
+      return;
+    }
+
+    let html = componentCache.get(componentPath);
+    if (!html) {
+      const response = await fetch(componentPath, { cache: 'force-cache' });
+      if (!response.ok) {
+        console.warn(`Component not found: ${componentPath} (${response.status})`);
         return;
       }
-      container.innerHTML = html;
+      html = await response.text();
+      componentCache.set(componentPath, html);
     }
+
+    container.innerHTML = html;
   } catch (error) {
     console.error(`Error loading component from ${componentPath}:`, error);
   }
@@ -22,6 +36,11 @@ export async function loadComponent(componentPath, containerId) {
 
 // Initialize global components
 export function initializeGlobalComponents() {
+  // Skip HTML fetch-based component loading when JS components loader is active.
+  if (window.__USE_JS_COMPONENTS__ === true) {
+    return;
+  }
+
   const basePath = getBasePath();
   loadComponent(`${basePath}pages/components/header.html`, 'header-container');
   loadComponent(`${basePath}pages/components/footer.html`, 'footer-container');

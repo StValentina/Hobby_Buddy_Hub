@@ -174,7 +174,7 @@ function renderPeople(people) {
 
         // Determine avatar display
         const avatarContent = person.avatar_url 
-            ? `<img src="${person.avatar_url}" alt="${person.name}" class="person-avatar-image">`
+            ? `<img src="${person.avatar_url}" alt="${person.name}" class="person-avatar-image" loading="lazy" decoding="async">`
             : `<span class="person-avatar-icon"><i class="bi bi-person-fill"></i></span>`;
         const avatarStyle = `style="background: ${gradient};"`;
 

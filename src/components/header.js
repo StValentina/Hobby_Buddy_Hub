@@ -14,26 +14,17 @@ export class Header {
   }
 
   render() {
-    console.log('=== HEADER RENDER START ===');
-    
     // Force refresh of auth token from localStorage on every render
     // This ensures we catch new logins immediately after auth pages redirect
     apiService.authToken = apiService.getAuthToken();
     
     const isAuthenticated = apiService.isAuthenticated();
     const user = isAuthenticated ? apiService.getCurrentUser() : null;
-    
-    console.log('Header render - isAuthenticated:', isAuthenticated);
-    console.log('Header render - user:', user);
-    console.log('Header render - authToken:', apiService.authToken);
-    console.log('Header render - token parts:', apiService.authToken ? apiService.authToken.split('.').length : 'NO TOKEN');
 
     if (isAuthenticated && user) {
-      console.log('Rendering AUTHENTICATED UI for:', user.email);
       // Load user profile asynchronously to get full name
       this.renderAuthenticatedUI(user);
     } else {
-      console.log('Rendering UNAUTHENTICATED UI (showing Login/Sign Up)');
       this.renderUnauthenticatedUI();
     }
   }
@@ -46,13 +37,15 @@ export class Header {
     let isAdmin = false;
     
     try {
-      // Load user profile to get full name
-      const profile = await this.apiService.getProfile(user.id);
+      // Load independent resources in parallel to reduce header render latency.
+      const [profile, role] = await Promise.all([
+        this.apiService.getProfile(user.id),
+        this.apiService.getUserRole(user.id)
+      ]);
+
       if (profile?.full_name) {
         userDisplayName = profile.full_name;
       }
-
-      const role = await this.apiService.getUserRole(user.id);
       isAdmin = role === 'admin';
     } catch (error) {
       console.warn('Failed to load user profile for header display:', error);
@@ -181,9 +174,6 @@ export class Header {
         </div>
       </nav>
     `;
-    
-    console.log('=== HEADER RENDER END ===');
-
     // Ensure Bootstrap dropdown functionality is initialized
     this.initializeDropdowns();
   }
@@ -204,12 +194,10 @@ export class Header {
 // Global logout handler
 window.headerLogout = function(event) {
   event.preventDefault();
-  console.log('Logging out...');
   
   try {
     apiService.logout();
-    console.log('User logged out successfully');
-    
+
     // Redirect to login page
     window.location.href = '/pages/auth/login.html';
   } catch (error) {

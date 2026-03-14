@@ -8,36 +8,31 @@
 import { Header } from './header.js';
 import { Footer } from './footer.js';
 
+// Signal global HTML fetch loader to skip duplicate header/footer requests.
+window.__USE_JS_COMPONENTS__ = true;
+
 class ComponentsLoader {
   static initialize() {
-    console.log('ComponentsLoader: Initializing global components...');
-    
     // Initialize Header
     const headerContainer = document.getElementById('header-container');
     if (headerContainer) {
-      console.log('ComponentsLoader: Rendering Header component');
       try {
         const header = new Header();
         header.render();
       } catch (error) {
         console.error('ComponentsLoader: Error rendering header:', error);
       }
-    } else {
-      console.warn('ComponentsLoader: No header-container element found on page');
     }
     
     // Initialize Footer
     const footerContainer = document.getElementById('footer-container');
     if (footerContainer) {
-      console.log('ComponentsLoader: Rendering Footer component');
       try {
         const footer = new Footer();
         footer.render();
       } catch (error) {
         console.error('ComponentsLoader: Error rendering footer:', error);
       }
-    } else {
-      console.warn('ComponentsLoader: No footer-container element found on page');
     }
   }
 }

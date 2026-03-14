@@ -6,6 +6,7 @@ import { apiService } from '/src/services/api.js';
 
 // Hobbies data (will be loaded from database)
 let hobbiesData = [];
+let listenersAttached = false;
 
 /**
  * Generate icon for hobby based on name
@@ -27,8 +28,6 @@ function generateHobbyIcon(name) {
  */
 async function loadHobbies() {
     try {
-        console.log('Loading hobbies...');
-
         await fetchHobbiesFromDatabase();
     } catch (error) {
         console.error('Failed to load hobbies:', error);
@@ -53,9 +52,7 @@ async function loadHobbies() {
  */
 async function fetchHobbiesFromDatabase() {
     try {
-        console.log('Fetching hobbies from Supabase...');
         const hobbies = await apiService.getHobbies();
-        console.log('Hobbies loaded successfully:', hobbies);
         
         // Add generated icons to hobbies
         hobbiesData = hobbies.map(hobby => ({
@@ -63,14 +60,8 @@ async function fetchHobbiesFromDatabase() {
             tags: Array.isArray(hobby.tags) ? hobby.tags : [],
             icon: generateHobbyIcon(hobby.name)
         }));
-        
-        console.log('Rendering hobbies...');
+
         renderHobbies(hobbiesData);
-        
-        console.log('Attaching event listeners...');
-        attachEventListeners();
-        
-        console.log('Hobbies page loaded successfully!');
     } catch (error) {
         console.error('Failed to fetch hobbies from database:', error);
         throw error;
@@ -80,6 +71,7 @@ async function fetchHobbiesFromDatabase() {
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     window.setActiveNav('Hobbies');
+    attachEventListeners();
     loadHobbies();
 });
 
@@ -105,7 +97,7 @@ function renderHobbies(hobbies) {
     grid.innerHTML = hobbies.map(hobby => {
         // Determine image display
         const imageContent = hobby.image_url 
-            ? `<img src="${hobby.image_url}" alt="${hobby.name}" style="width: 100%; height: 100%; object-fit: cover;">`
+            ? `<img src="${hobby.image_url}" alt="${hobby.name}" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: cover;">`
             : `<div style="display: flex; align-items: center; justify-content: center; height: 100%;">${hobby.icon}</div>`;
 
         return `
@@ -149,6 +141,10 @@ function debounce(func, delay = 300) {
  * Attach event listeners for search and filter
  */
 function attachEventListeners() {
+    if (listenersAttached) {
+        return;
+    }
+
     const searchInput = document.getElementById('searchInput');
     const categorySelect = document.getElementById('categorySelect');
 
@@ -161,8 +157,6 @@ function attachEventListeners() {
         return;
     }
 
-    console.log('Attaching event listeners...');
-    
     // Use debounce for search to avoid filtering on every keystroke
     const debouncedFilter = debounce(filterHobbies, 300);
     
@@ -173,6 +167,8 @@ function attachEventListeners() {
     categorySelect.addEventListener('change', () => {
         filterHobbies();
     });
+
+    listenersAttached = true;
 }
 
 /**

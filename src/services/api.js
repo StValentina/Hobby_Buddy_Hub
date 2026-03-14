@@ -36,16 +36,13 @@ class APIService {
    * Get stored authentication token
    */
   getAuthToken() {
-    const token = localStorage.getItem('auth_token');
-    console.log('getAuthToken() called - returning:', token ? 'TOKEN EXISTS' : 'NO TOKEN');
-    return token;
+    return localStorage.getItem('auth_token');
   }
 
   /**
    * Set authentication token
    */
   setAuthToken(token) {
-    console.log('setAuthToken() - storing token:', token ? 'YES' : 'NO');
     localStorage.setItem('auth_token', token);
     this.authToken = token;
   }
@@ -54,7 +51,6 @@ class APIService {
    * Clear authentication token
    */
   clearAuthToken() {
-    console.log('clearAuthToken() - removing token');
     localStorage.removeItem('auth_token');
     this.authToken = null;
   }

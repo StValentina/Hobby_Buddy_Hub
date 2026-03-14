@@ -6,6 +6,7 @@ import { apiService } from '/src/services/api.js';
 
 // Events data (will be loaded from database)
 let eventsData = [];
+let listenersAttached = false;
 
 /**
  * Generate icon for event based on hobby name
@@ -26,19 +27,15 @@ function generateEventIcon(category) {
  */
 async function loadEvents() {
     try {
-        console.log('Loading events...');
-        
         // Check localStorage cache first
         const cachedEvents = localStorage.getItem('events_cache');
         if (cachedEvents) {
-            console.log('Using cached events...');
             const parsed = JSON.parse(cachedEvents);
             eventsData = parsed.map(event => ({
                 ...event,
                 icon: generateEventIcon(event.category)
             }));
             renderEvents(eventsData);
-            attachEventListeners();
             
             // Update cache in background
             fetchAndCacheEvents();
@@ -50,10 +47,8 @@ async function loadEvents() {
     } catch (error) {
         console.error('Failed to load events:', error);
         // Fallback to static data
-        console.log('Using fallback events data...');
         eventsData = [];
         renderEvents(eventsData);
-        attachEventListeners();
     }
 }
 
@@ -62,9 +57,7 @@ async function loadEvents() {
  */
 async function fetchAndCacheEvents() {
     try {
-        console.log('Fetching events from Supabase...');
         const events = await apiService.getEvents();
-        console.log('Events loaded successfully:', events);
         
         // Add generated icons to events
         eventsData = events.map(event => ({
@@ -78,14 +71,8 @@ async function fetchAndCacheEvents() {
         } catch (e) {
             console.warn('Failed to cache events:', e);
         }
-        
-        console.log('Rendering events...');
+
         renderEvents(eventsData);
-        
-        console.log('Attaching event listeners...');
-        attachEventListeners();
-        
-        console.log('Events page loaded successfully!');
     } catch (error) {
         console.error('Failed to fetch events from database:', error);
         throw error;
@@ -95,6 +82,7 @@ async function fetchAndCacheEvents() {
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     window.setActiveNav('Events');
+    attachEventListeners();
     loadEvents();
 });
 
@@ -175,6 +163,10 @@ function debounce(func, delay = 300) {
  * Attach event listeners for search and filter
  */
 function attachEventListeners() {
+    if (listenersAttached) {
+        return;
+    }
+
     const searchInput = document.getElementById('searchInput');
     const categorySelect = document.getElementById('categorySelect');
 
@@ -190,6 +182,8 @@ function attachEventListeners() {
             filterEvents();
         });
     }
+
+    listenersAttached = true;
 }
 
 /**
