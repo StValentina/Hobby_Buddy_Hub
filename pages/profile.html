@@ -62,15 +62,15 @@
                         <!-- Stats -->
                         <div class="profile-stats">
                             <div class="stat-item">
-                                <span class="stat-number">12</span>
+                                <span class="stat-number" id="eventsJoinedCount">0</span>
                                 <span class="stat-label">Events Joined</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-number">5</span>
+                                <span class="stat-number" id="hobbiesCount">0</span>
                                 <span class="stat-label">Hobbies</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-number">28</span>
+                                <span class="stat-number" id="connectionsCount">0</span>
                                 <span class="stat-label">Connections</span>
                             </div>
                         </div>
@@ -85,7 +85,7 @@
                 <!-- Main Content (Right) -->
                 <div class="col-lg-8">
                     <!-- About Section -->
-                    <div class="section-card">
+                    <div class="section-card" id="aboutSection">
                         <div class="section-header">
                             <h3 class="section-title">About Me</h3>
                         </div>
@@ -97,17 +97,55 @@
                     </div>
 
                     <!-- My Hobbies Section -->
-                    <div class="section-card">
-                        <div class="section-header">
-                            <h3 class="section-title">My Hobbies</h3>
+                    <div class="section-card" id="hobbiesSection">
+                        <div class="section-header d-flex justify-content-between align-items-center">
+                            <h3 class="section-title mb-0">My Hobbies</h3>
+                            <button class="btn btn-sm btn-outline-primary" id="editHobbiesBtn">
+                                <i class="bi bi-pencil me-1"></i>Edit
+                            </button>
                         </div>
                         <div class="section-content">
                             <div class="hobbies-tags" id="hobbiesList">
-                                <span class="hobby-badge">Hiking</span>
-                                <span class="hobby-badge">Photography</span>
-                                <span class="hobby-badge">Traveling</span>
-                                <span class="hobby-badge">Painting</span>
-                                <span class="hobby-badge">Reading</span>
+                                <span class="text-muted">No hobbies selected yet.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Hobbies Form (Hidden by default) -->
+                    <div class="section-card" id="editHobbiesFormSection" style="display: none;">
+                        <div class="section-header">
+                            <h3 class="section-title">Edit My Hobbies</h3>
+                        </div>
+                        <form id="editHobbiesForm" class="section-content">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Select your hobbies:</label>
+                                <p class="text-muted small">Check all hobbies that interest you</p>
+                                <div id="hobbiesCheckboxes" class="hobbies-checklist">
+                                    <!-- Checkboxes will be populated by JavaScript -->
+                                </div>
+                            </div>
+
+                            <div class="form-buttons">
+                                <button type="button" class="btn btn-lg btn-primary" id="saveHobbiesBtn">
+                                    <i class="bi bi-check-circle me-2"></i>Save Hobbies
+                                </button>
+                                <button type="button" class="btn btn-lg btn-outline-secondary" id="cancelHobbiesBtn">
+                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Upcoming Events Section -->
+                    <div class="section-card" id="upcomingEventsSection">
+                        <div class="section-header">
+                            <h3 class="section-title">
+                                <i class="bi bi-calendar-event me-2"></i>Upcoming Events
+                            </h3>
+                        </div>
+                        <div class="section-content">
+                            <div id="upcomingEventsList" class="events-list">
+                                <p class="text-muted">No upcoming events yet. <a href="/pages/events.html">Browse events</a></p>
                             </div>
                         </div>
                     </div>

@@ -7,6 +7,7 @@ import { apiService } from '../services/api.js';
 export class Header {
   constructor() {
     this.container = document.getElementById('header-container');
+    this.apiService = apiService;
     if (!this.container) {
       console.error('Header container not found!');
     }
@@ -15,7 +16,10 @@ export class Header {
   render() {
     console.log('=== HEADER RENDER START ===');
     
-    // Force fresh check
+    // Force refresh of auth token from localStorage on every render
+    // This ensures we catch new logins immediately after auth pages redirect
+    apiService.authToken = apiService.getAuthToken();
+    
     const isAuthenticated = apiService.isAuthenticated();
     const user = isAuthenticated ? apiService.getCurrentUser() : null;
     
@@ -24,13 +28,34 @@ export class Header {
     console.log('Header render - authToken:', apiService.authToken);
     console.log('Header render - token parts:', apiService.authToken ? apiService.authToken.split('.').length : 'NO TOKEN');
 
-    let authHtml = '';
-    
     if (isAuthenticated && user) {
       console.log('Rendering AUTHENTICATED UI for:', user.email);
-      // Authenticated user UI
-      const userEmail = user?.email || 'User';
-      authHtml = `
+      // Load user profile asynchronously to get full name
+      this.renderAuthenticatedUI(user);
+    } else {
+      console.log('Rendering UNAUTHENTICATED UI (showing Login/Sign Up)');
+      this.renderUnauthenticatedUI();
+    }
+  }
+
+  /**
+   * Render authenticated UI with user profile loaded asynchronously
+   */
+  async renderAuthenticatedUI(user) {
+    let userDisplayName = user?.email || 'User';
+    
+    try {
+      // Load user profile to get full name
+      const profile = await this.apiService.getProfile(user.id);
+      if (profile?.full_name) {
+        userDisplayName = profile.full_name;
+      }
+    } catch (error) {
+      console.warn('Failed to load user profile for header display:', error);
+      // Fall back to email if profile load fails
+    }
+
+    const authHtml = `
         <li class="nav-item dropdown">
           <a 
             class="nav-link dropdown-toggle" 
@@ -40,7 +65,7 @@ export class Header {
             data-bs-toggle="dropdown" 
             aria-expanded="false"
           >
-            <i class="bi bi-person-circle me-1"></i>${userEmail}
+            <i class="bi bi-person-circle me-1"></i>${userDisplayName}
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
             <li><a class="dropdown-item" href="/pages/profile.html">
@@ -59,10 +84,15 @@ export class Header {
           </ul>
         </li>
       `;
-    } else {
-      console.log('Rendering UNAUTHENTICATED UI (showing Login/Sign Up)');
-      // Unauthenticated user UI
-      authHtml = `
+
+    this.renderNavbar(authHtml);
+  }
+
+  /**
+   * Render unauthenticated UI
+   */
+  renderUnauthenticatedUI() {
+    const authHtml = `
         <li class="nav-item">
           <a class="nav-link" href="/pages/auth/login.html">
             <i class="bi bi-box-arrow-in-right me-1"></i>Login
@@ -74,7 +104,15 @@ export class Header {
           </a>
         </li>
       `;
-    }
+
+    this.renderNavbar(authHtml);
+  }
+
+  /**
+   * Render the navbar with the given auth HTML
+   */
+  renderNavbar(authHtml) {
+    const isAuthenticated = this.apiService.isAuthenticated();
 
     this.container.innerHTML = `
       <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">

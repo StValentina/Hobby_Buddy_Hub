@@ -38,10 +38,10 @@ class AppRouter {
     this.loadPage(path);
   }
 
-  /**
-   * Load and render a page based on path
-   */
-  async loadPage(path) {
+/**
+ * Load and render a page based on path
+ */
+async loadPage(path) {
     // Normalize path (remove trailing slash except for root)
     if (path !== '/' && path.endsWith('/')) {
       path = path.slice(0, -1);
@@ -69,10 +69,26 @@ class AppRouter {
       if (this.currentPage.setup) {
         await this.currentPage.setup();
       }
+      
+      // Re-initialize header and footer components after page load
+      // This ensures header shows correct auth state (logged in / logged out)
+      this.reinitializeComponents();
     } catch (error) {
       console.error(`Error loading page: ${path}`, error);
       this.loadErrorPage();
     }
+  }
+
+  /**
+   * Reinitialize header and footer components
+   */
+  reinitializeComponents() {
+    import('../components/loader.js').then((module) => {
+      // ComponentsLoader will auto-initialize on import
+      console.log('Components re-initialized for page change');
+    }).catch(error => {
+      console.error('Failed to re-initialize components:', error);
+    });
   }
 
   /**

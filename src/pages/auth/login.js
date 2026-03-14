@@ -3,6 +3,9 @@ import { apiService } from '/src/services/api.js';
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     window.setActiveNav('Login');
+    
+    // Check if user is already logged in and redirect if they are
+    checkExistingSession();
 });
 
 const form = document.getElementById('loginForm');
@@ -143,9 +146,27 @@ form.addEventListener('submit', async (e) => {
  * Check if user is already logged in
  */
 function checkExistingSession() {
-    if (apiService.isAuthenticated()) {
-        // Redirect to home if already logged in
-        window.location.href = '/';
+    const token = localStorage.getItem('auth_token');
+    
+    // Only check if token exists and has valid JWT format (3 parts separated by dots)
+    if (token && token.split('.').length === 3) {
+        console.log('Found token, validating...');
+        apiService.authToken = token;
+        
+        if (apiService.isAuthenticated()) {
+            console.log('Valid token found, user is already authenticated. Redirecting to home...');
+            // User is already logged in, redirect to home
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 300);
+        } else {
+            console.log('Token is invalid, clearing and showing login form');
+            // Invalid token - clear it and show login form
+            localStorage.removeItem('auth_token');
+        }
+    } else {
+        console.log('No valid token, showing login form');
+        // No token - allow user to see login form
     }
 }
 

@@ -9,6 +9,10 @@ export async function loadComponent(componentPath, containerId) {
     const html = await response.text();
     const container = document.getElementById(containerId);
     if (container) {
+      // Do not overwrite containers that were already rendered by dynamic JS components.
+      if (container.innerHTML.trim().length > 0) {
+        return;
+      }
       container.innerHTML = html;
     }
   } catch (error) {
