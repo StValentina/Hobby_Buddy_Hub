@@ -1,0 +1,15 @@
+/* Admin page styles */
+
+.table td,
+.table th {
+    vertical-align: middle;
+}
+
+.badge {
+    text-transform: lowercase;
+    font-size: 0.8rem;
+}
+
+.save-role-btn {
+    min-width: 72px;
+}

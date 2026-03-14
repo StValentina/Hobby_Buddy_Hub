@@ -43,6 +43,7 @@ export class Header {
    */
   async renderAuthenticatedUI(user) {
     let userDisplayName = user?.email || 'User';
+    let isAdmin = false;
     
     try {
       // Load user profile to get full name
@@ -50,12 +51,30 @@ export class Header {
       if (profile?.full_name) {
         userDisplayName = profile.full_name;
       }
+
+      const role = await this.apiService.getUserRole(user.id);
+      isAdmin = role === 'admin';
     } catch (error) {
       console.warn('Failed to load user profile for header display:', error);
       // Fall back to email if profile load fails
     }
 
+    const adminNavHtml = isAdmin ? `
+        <li class="nav-item">
+          <a class="nav-link" href="/pages/admin.html">
+            <i class="bi bi-shield-lock me-1"></i>Admin
+          </a>
+        </li>
+      ` : '';
+
+    const adminDropdownItem = isAdmin ? `
+            <li><a class="dropdown-item" href="/pages/admin.html">
+              <i class="bi bi-shield-lock me-2"></i>Admin Panel
+            </a></li>
+      ` : '';
+
     const authHtml = `
+        ${adminNavHtml}
         <li class="nav-item dropdown">
           <a 
             class="nav-link dropdown-toggle" 
@@ -74,6 +93,7 @@ export class Header {
             <li><a class="dropdown-item" href="/pages/dashboard.html">
               <i class="bi bi-speedometer2 me-2"></i>Dashboard
             </a></li>
+            ${adminDropdownItem}
             <li><a class="dropdown-item" href="#">
               <i class="bi bi-gear me-2"></i>Settings
             </a></li>

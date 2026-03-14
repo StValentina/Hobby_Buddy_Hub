@@ -184,7 +184,7 @@ class APIService {
     try {
       console.log('Fetching hobbies from Supabase...');
       
-      // Fetch all hobbies (simplified - no tags for dropdown)
+      // Fetch all hobbies first
       const hobbiesResponse = await this.get('/hobbies?select=id,name,description,image_url');
       
       console.log('Hobbies fetched:', hobbiesResponse);
@@ -194,7 +194,33 @@ class APIService {
         return [];
       }
       
-      return hobbiesResponse;
+      // Try to fetch tags for each hobby
+      const hobbiesWithTags = await Promise.all(
+        hobbiesResponse.map(async (hobby) => {
+          try {
+            // Fetch tags for this hobby
+            const hobbyTags = await this.get(`/hobby_tags?hobby_id=eq.${hobby.id}&select=tags(id,name)`);
+            const tags = hobbyTags && hobbyTags.length > 0 
+              ? hobbyTags.map(ht => ht.tags?.name || '').filter(Boolean)
+              : [];
+            
+            return {
+              ...hobby,
+              tags: tags
+            };
+          } catch (error) {
+            console.warn(`Failed to fetch tags for hobby ${hobby.id}:`, error);
+            // Return hobby without tags if fetch fails
+            return {
+              ...hobby,
+              tags: []
+            };
+          }
+        })
+      );
+      
+      console.log('Hobbies with tags:', hobbiesWithTags);
+      return hobbiesWithTags;
     } catch (error) {
       console.error('Failed to fetch hobbies:', error);
       throw error;
@@ -592,6 +618,91 @@ class APIService {
         status: error.status,
         originalError: error
       });
+      throw error;
+    }
+  }
+
+  /**
+   * Get user hobbies
+   */
+  async getUserRole(userId) {
+    try {
+      console.log(`Fetching role for user ${userId}...`);
+
+      const rows = await this.get(`/user_roles?user_id=eq.${encodeURIComponent(userId)}&select=role`);
+      const role = rows?.[0]?.role || 'seeker';
+
+      console.log(`Role fetched for user ${userId}: ${role}`);
+      return role;
+    } catch (error) {
+      console.error(`Failed to fetch role for user ${userId}:`, error);
+      return 'seeker';
+    }
+  }
+
+  /**
+   * Get all users and their roles (admin only)
+   */
+  async getAllUsersWithRoles() {
+    try {
+      console.log('Fetching all users with roles...');
+
+      const profiles = await this.get('/profiles?select=id,full_name,email,created_at,user_roles(role)&order=created_at.desc');
+
+      if (!profiles || profiles.length === 0) {
+        return [];
+      }
+
+      return profiles.map(profile => ({
+        user_id: profile.id,
+        full_name: profile.full_name,
+        email: profile.email,
+        // PostgREST may return embedded relation as object (1:1) or array (1:N).
+        role: profile.user_roles?.role || (Array.isArray(profile.user_roles) ? profile.user_roles[0]?.role : null) || 'seeker',
+        created_at: profile.created_at
+      }));
+    } catch (error) {
+      console.error('Failed to fetch all users with roles:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a user's role (admin only)
+   */
+  async updateUserRole(userId, newRole) {
+    try {
+      const validRoles = ['seeker', 'host', 'admin'];
+      if (!validRoles.includes(newRole)) {
+        throw new Error(`Invalid role: ${newRole}`);
+      }
+
+      console.log(`Updating role for user ${userId} to ${newRole}...`);
+
+      // Update only the existing role row for the user.
+      // This avoids INSERT/UPSERT paths that can fail RLS USING checks.
+      const result = await this.patch(
+        `/user_roles?user_id=eq.${encodeURIComponent(userId)}`,
+        { role: newRole },
+        {
+          headers: {
+            'Prefer': 'return=representation'
+          }
+        }
+      );
+
+      // Some PostgREST responses can be empty depending on preferences/policies.
+      // Verify final state to ensure role was saved.
+      const verifyRows = await this.get(`/user_roles?user_id=eq.${encodeURIComponent(userId)}&select=role`);
+      const savedRole = verifyRows?.[0]?.role;
+
+      if (savedRole !== newRole) {
+        throw new Error(`Role update verification failed. Expected: ${newRole}, got: ${savedRole || 'none'}`);
+      }
+
+      return result;
+    } catch (error) {
+      console.error(`Failed to update role for user ${userId}:`, error);
       throw error;
     }
   }

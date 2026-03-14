@@ -7,38 +7,6 @@ import { apiService } from '/src/services/api.js';
 // Hobbies data (will be loaded from database)
 let hobbiesData = [];
 
-// Fallback static data (for testing when database is unavailable)
-const fallbackHobbiesData = [
-    {
-        id: 1,
-        name: 'Hiking',
-        description: 'Explore nature trails and mountains with fellow hiking enthusiasts.',
-        icon: '🥾',
-        tags: ['outdoor', 'nature', 'fitness', 'adventure']
-    },
-    {
-        id: 2,
-        name: 'Photography',
-        description: 'Capture moments and learn photography techniques from professionals.',
-        icon: '📸',
-        tags: ['creative', 'art', 'visual', 'technology']
-    },
-    {
-        id: 3,
-        name: 'Chess',
-        description: 'Master the game of chess and compete with players of all levels.',
-        icon: '♟️',
-        tags: ['strategy', 'intellectual', 'competitive', 'games']
-    },
-    {
-        id: 4,
-        name: 'Cooking',
-        description: 'Learn culinary skills and share delicious recipes with food lovers.',
-        icon: '🍳',
-        tags: ['culinary', 'creative', 'social', 'food']
-    }
-];
-
 /**
  * Generate icon for hobby based on name
  */
@@ -60,40 +28,30 @@ function generateHobbyIcon(name) {
 async function loadHobbies() {
     try {
         console.log('Loading hobbies...');
-        
-        // Check localStorage cache first
-        const cachedHobbies = localStorage.getItem('hobbies_cache');
-        if (cachedHobbies) {
-            console.log('Using cached hobbies...');
-            const parsed = JSON.parse(cachedHobbies);
-            hobbiesData = parsed.map(hobby => ({
-                ...hobby,
-                icon: generateHobbyIcon(hobby.name)
-            }));
-            renderHobbies(hobbiesData);
-            attachEventListeners();
-            
-            // Update cache in background
-            fetchAndCacheHobbies();
-            return;
-        }
-        
-        // Fetch from database
-        await fetchAndCacheHobbies();
+
+        await fetchHobbiesFromDatabase();
     } catch (error) {
         console.error('Failed to load hobbies:', error);
-        // Fallback to static data
-        console.log('Using fallback hobbies data...');
-        hobbiesData = fallbackHobbiesData;
-        renderHobbies(hobbiesData);
-        attachEventListeners();
+
+        const grid = document.getElementById('hobbiesGrid');
+        if (grid) {
+            grid.innerHTML = `
+                <div class="col-12">
+                    <div class="no-results">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <h3>Unable to load hobbies</h3>
+                        <p class="text-muted">Please try again in a moment.</p>
+                    </div>
+                </div>
+            `;
+        }
     }
 }
 
 /**
- * Fetch hobbies from database and cache them
+ * Fetch hobbies from database
  */
-async function fetchAndCacheHobbies() {
+async function fetchHobbiesFromDatabase() {
     try {
         console.log('Fetching hobbies from Supabase...');
         const hobbies = await apiService.getHobbies();
@@ -102,15 +60,9 @@ async function fetchAndCacheHobbies() {
         // Add generated icons to hobbies
         hobbiesData = hobbies.map(hobby => ({
             ...hobby,
+            tags: Array.isArray(hobby.tags) ? hobby.tags : [],
             icon: generateHobbyIcon(hobby.name)
         }));
-        
-        // Cache in localStorage (with error handling)
-        try {
-            localStorage.setItem('hobbies_cache', JSON.stringify(hobbies));
-        } catch (e) {
-            console.warn('Failed to cache hobbies:', e);
-        }
         
         console.log('Rendering hobbies...');
         renderHobbies(hobbiesData);
@@ -161,7 +113,7 @@ function renderHobbies(hobbies) {
                         <h5 class="hobby-card-title">${hobby.name}</h5>
                         <p class="hobby-card-description">${hobby.description}</p>
                         <div class="hobby-card-tags">
-                            ${hobby.tags.map(tag => `<span class="hobby-tag">${tag}</span>`).join('')}
+                            ${(hobby.tags || []).map(tag => `<span class="hobby-tag">${tag}</span>`).join('')}
                         </div>
                     </div>
                     <div class="hobby-card-footer">
@@ -224,11 +176,12 @@ function filterHobbies() {
     const selectedTag = document.getElementById('categorySelect').value;
 
     const filtered = hobbiesData.filter(hobby => {
+        const tags = Array.isArray(hobby.tags) ? hobby.tags : [];
         const matchesSearch = hobby.name.toLowerCase().includes(searchTerm) ||
                             hobby.description.toLowerCase().includes(searchTerm) ||
-                            hobby.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+                            tags.some(tag => tag.toLowerCase().includes(searchTerm));
         
-        const matchesTag = !selectedTag || hobby.tags.some(tag => tag.toLowerCase() === selectedTag.toLowerCase());
+        const matchesTag = !selectedTag || tags.some(tag => tag.toLowerCase() === selectedTag.toLowerCase());
 
         return matchesSearch && matchesTag;
     });
@@ -243,13 +196,4 @@ function joinHobby(hobbyName) {
     alert(`You joined the "${hobbyName}" hobby group!`);
     console.log(`User joined: ${hobbyName}`);
     // TODO: Implement actual join functionality with Supabase
-}
-
-/**
- * Clear hobbies cache (for debugging/testing)
- */
-function clearHobbiesCache() {
-    localStorage.removeItem('hobbies_cache');
-    console.log('Hobbies cache cleared');
-    location.reload();
 }
