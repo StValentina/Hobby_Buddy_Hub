@@ -26,6 +26,35 @@
             </div>
         </section>
 
+        <!-- Search and Filter Section -->
+        <section class="py-4 bg-white border-bottom">
+            <div class="container">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <input 
+                            type="text" 
+                            class="form-control form-control-lg" 
+                            id="searchInput" 
+                            placeholder="Search hobbies, tags, descriptions..."
+                        >
+                    </div>
+                    <div class="col-md-4">
+                        <select 
+                            class="form-select form-select-lg" 
+                            id="categorySelect"
+                        >
+                            <option value="">All Tags</option>
+                            <option value="outdoor">Outdoor</option>
+                            <option value="creative">Creative</option>
+                            <option value="intellectual">Intellectual</option>
+                            <option value="fitness">Fitness</option>
+                            <option value="social">Social</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Hobbies Grid -->
         <section class="py-5">
             <div class="container">
@@ -43,6 +72,6 @@
     <!-- Global JS -->
     <script src="/public/js/global.js"></script>
     <!-- Page JS -->
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

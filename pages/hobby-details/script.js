@@ -2,6 +2,8 @@
  * Hobby Details Page JavaScript
  */
 
+import { apiService } from '/src/services/api.js';
+
 // Hobbies database with detailed information
 const hobbiesDatabase = [
     {
@@ -192,9 +194,17 @@ function getHobbyIdFromURL() {
     return params.get('id');
 }
 
-// Find hobby by ID
-function findHobbyById(id) {
-    return hobbiesDatabase.find(hobby => hobby.id === parseInt(id));
+// Generate icon for hobby based on name
+function generateHobbyIcon(name) {
+    const iconMap = {
+        'hiking': '🥾', 'photography': '📸', 'chess': '♟️', 'cooking': '🍳',
+        'painting': '🎨', 'dancing': '💃', 'literature': '📚', 'traveling': '✈️',
+        'gardening': '🌱', 'fitness': '🏃', 'music': '🎵', 'board games': '🎲',
+        'yoga': '🧘', 'cycling': '🚴', 'rock climbing': '🧗'
+    };
+    
+    const lowerName = name.toLowerCase();
+    return iconMap[lowerName] || '⭐';
 }
 
 // Render hobby details
@@ -212,7 +222,10 @@ function renderHobbyDetails(hobby) {
 
     // Hero section
     document.getElementById('hobbyHero').style.background = `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`;
-    document.getElementById('hobbyIcon').textContent = hobby.icon;
+    
+    // Generate icon if not provided
+    const icon = hobby.icon || generateHobbyIcon(hobby.name);
+    document.getElementById('hobbyIcon').textContent = icon;
     document.getElementById('hobbyTitle').textContent = hobby.name;
 
     // Description
@@ -224,16 +237,39 @@ function renderHobbyDetails(hobby) {
         `<span class="hobby-tag">${tag.charAt(0).toUpperCase() + tag.slice(1)}</span>`
     ).join('');
 
-    // Stats
-    document.getElementById('difficultyLevel').textContent = hobby.difficulty;
-    document.getElementById('timeCommitment').textContent = hobby.timeCommitment;
-    document.getElementById('costLevel').textContent = hobby.cost;
-    document.getElementById('interestedCount').textContent = hobby.interestedCount + ' people';
-    document.getElementById('activeEventsCount').textContent = hobby.activeEventsCount + ' events';
+    // Stats (with defaults if not provided)
+    const difficulty = document.getElementById('difficultyLevel');
+    if (difficulty && hobby.difficulty) {
+        difficulty.textContent = hobby.difficulty;
+    }
+    
+    const timeCommitment = document.getElementById('timeCommitment');
+    if (timeCommitment && hobby.timeCommitment) {
+        timeCommitment.textContent = hobby.timeCommitment;
+    }
+    
+    const costLevel = document.getElementById('costLevel');
+    if (costLevel && hobby.cost) {
+        costLevel.textContent = hobby.cost;
+    }
+    
+    const interestedCount = document.getElementById('interestedCount');
+    if (interestedCount) {
+        interestedCount.textContent = (hobby.people ? hobby.people.length : 0) + ' people';
+    }
+    
+    const activeEventsCount = document.getElementById('activeEventsCount');
+    if (activeEventsCount) {
+        activeEventsCount.textContent = (hobby.events ? hobby.events.length : 0) + ' events';
+    }
 
-    // Popularity stars
-    const starsHtml = Array(hobby.popularity).fill('<i class="bi bi-star-fill"></i>').join('');
-    document.getElementById('popularityStars').innerHTML = starsHtml;
+    // Popularity stars (with default if not provided)
+    const popularityStars = document.getElementById('popularityStars');
+    if (popularityStars) {
+        const popularity = hobby.popularity || 3;
+        const starsHtml = Array(popularity).fill('<i class="bi bi-star-fill"></i>').join('');
+        popularityStars.innerHTML = starsHtml;
+    }
 
     // Events
     const eventsList = document.getElementById('eventsList');
@@ -256,21 +292,29 @@ function renderHobbyDetails(hobby) {
 
     // People
     const peopleList = document.getElementById('peopleList');
-    peopleList.innerHTML = hobby.people.map(person => `
-        <div class="person-item">
-            <div class="person-avatar">${person.name.split(' ').map(n => n[0]).join('')}</div>
-            <p class="person-name">${person.name}</p>
-            <p class="person-city">${person.city}</p>
-        </div>
-    `).join('');
+    if (hobby.people && hobby.people.length > 0) {
+        peopleList.innerHTML = hobby.people.map(person => `
+            <div class="person-item">
+                <div class="person-avatar">${person.name.split(' ').map(n => n[0]).join('')}</div>
+                <p class="person-name">${person.name}</p>
+                <p class="person-city">${person.city}</p>
+            </div>
+        `).join('');
+    } else {
+        peopleList.innerHTML = '<p class="text-muted">No people interested yet. Be the first to join!</p>';
+    }
 
     // Related hobbies
     const relatedHobbies = document.getElementById('relatedHobbies');
-    relatedHobbies.innerHTML = hobby.relatedHobbies.map(hobbyName => `
-        <a href="#" class="related-hobby-link">
-            <i class="bi bi-arrow-right"></i>${hobbyName}
-        </a>
-    `).join('');
+    if (hobby.relatedHobbies && hobby.relatedHobbies.length > 0) {
+        relatedHobbies.innerHTML = hobby.relatedHobbies.map(hobbyName => `
+            <a href="#" class="related-hobby-link">
+                <i class="bi bi-arrow-right"></i>${hobbyName}
+            </a>
+        `).join('');
+    } else {
+        relatedHobbies.innerHTML = '<p class="text-muted">No related hobbies at the moment.</p>';
+    }
 
     // Join button
     setupJoinButton(hobby);
@@ -281,21 +325,44 @@ function renderHobbyDetails(hobby) {
  */
 function setupJoinButton(hobby) {
     const joinBtn = document.getElementById('joinHobbyBtn');
+    if (!joinBtn) return;
+    
     joinBtn.addEventListener('click', () => {
         alert(`✅ Great! You've joined the ${hobby.name} hobby community!`);
     });
 }
 
+/**
+ * Load hobby details from database
+ */
+async function loadHobbyDetails() {
+    try {
+        setActiveNav('Hobbies');
+        
+        const hobbyId = getHobbyIdFromURL();
+        if (!hobbyId) {
+            console.warn('No hobby ID provided in URL');
+            renderHobbyDetails(null);
+            return;
+        }
+        
+        console.log('Loading hobby details for ID:', hobbyId);
+        const hobby = await apiService.getHobbyById(hobbyId);
+        
+        if (hobby) {
+            console.log('Hobby loaded:', hobby);
+            renderHobbyDetails(hobby);
+        } else {
+            console.warn('Hobby not found');
+            renderHobbyDetails(null);
+        }
+    } catch (error) {
+        console.error('Failed to load hobby details:', error);
+        renderHobbyDetails(null);
+    }
+}
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
-    setActiveNav('Hobbies');
-    
-    const hobbyId = getHobbyIdFromURL();
-    if (hobbyId) {
-        const hobby = findHobbyById(hobbyId);
-        renderHobbyDetails(hobby);
-    } else {
-        // Default: show first hobby
-        renderHobbyDetails(hobbiesDatabase[0]);
-    }
+    loadHobbyDetails();
 });

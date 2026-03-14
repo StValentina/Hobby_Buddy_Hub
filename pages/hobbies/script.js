@@ -2,13 +2,17 @@
  * Hobbies Page JavaScript
  */
 
-// Sample hobby data
-const hobbiesData = [
+import { apiService } from '/src/services/api.js';
+
+// Hobbies data (will be loaded from database)
+let hobbiesData = [];
+
+// Fallback static data (for testing when database is unavailable)
+const fallbackHobbiesData = [
     {
         id: 1,
         name: 'Hiking',
         description: 'Explore nature trails and mountains with fellow hiking enthusiasts.',
-        category: 'outdoor',
         icon: '🥾',
         tags: ['outdoor', 'nature', 'fitness', 'adventure']
     },
@@ -16,7 +20,6 @@ const hobbiesData = [
         id: 2,
         name: 'Photography',
         description: 'Capture moments and learn photography techniques from professionals.',
-        category: 'creative',
         icon: '📸',
         tags: ['creative', 'art', 'visual', 'technology']
     },
@@ -24,7 +27,6 @@ const hobbiesData = [
         id: 3,
         name: 'Chess',
         description: 'Master the game of chess and compete with players of all levels.',
-        category: 'intellectual',
         icon: '♟️',
         tags: ['strategy', 'intellectual', 'competitive', 'games']
     },
@@ -32,48 +34,101 @@ const hobbiesData = [
         id: 4,
         name: 'Cooking',
         description: 'Learn culinary skills and share delicious recipes with food lovers.',
-        category: 'creative',
         icon: '🍳',
         tags: ['culinary', 'creative', 'social', 'food']
-    },
-    {
-        id: 5,
-        name: 'Painting',
-        description: 'Express yourself through art and paint with like-minded artists.',
-        category: 'creative',
-        icon: '🎨',
-        tags: ['art', 'creative', 'visual', 'therapeutic']
-    },
-    {
-        id: 6,
-        name: 'Dancing',
-        description: 'Dance to your favorite music and join dance communities.',
-        category: 'sports',
-        icon: '💃',
-        tags: ['dance', 'fitness', 'social', 'music']
-    },
-    {
-        id: 7,
-        name: 'Reading',
-        description: 'Read, discuss, and analyze books with passionate readers.',
-        category: 'intellectual',
-        icon: '📚',
-        tags: ['reading', 'intellectual', 'discussion', 'culture']
-    },
-    {
-        id: 8,
-        name: 'Traveling',
-        description: 'Discover new places and travel with adventurous explorers.',
-        category: 'outdoor',
-        icon: '✈️',
-        tags: ['adventure', 'outdoor', 'social', 'exploration']
     }
 ];
+
+/**
+ * Generate icon for hobby based on name
+ */
+function generateHobbyIcon(name) {
+    const iconMap = {
+        'hiking': '🥾', 'photography': '📸', 'chess': '♟️', 'cooking': '🍳',
+        'painting': '🎨', 'dancing': '💃', 'literature': '📚', 'traveling': '✈️',
+        'gardening': '🌱', 'fitness': '🏃', 'music': '🎵', 'board games': '🎲',
+        'yoga': '🧘', 'cycling': '🚴', 'rock climbing': '🧗'
+    };
+    
+    const lowerName = name.toLowerCase();
+    return iconMap[lowerName] || '⭐';
+}
+
+/**
+ * Load hobbies from database
+ */
+async function loadHobbies() {
+    try {
+        console.log('Loading hobbies...');
+        
+        // Check localStorage cache first
+        const cachedHobbies = localStorage.getItem('hobbies_cache');
+        if (cachedHobbies) {
+            console.log('Using cached hobbies...');
+            const parsed = JSON.parse(cachedHobbies);
+            hobbiesData = parsed.map(hobby => ({
+                ...hobby,
+                icon: generateHobbyIcon(hobby.name)
+            }));
+            renderHobbies(hobbiesData);
+            attachEventListeners();
+            
+            // Update cache in background
+            fetchAndCacheHobbies();
+            return;
+        }
+        
+        // Fetch from database
+        await fetchAndCacheHobbies();
+    } catch (error) {
+        console.error('Failed to load hobbies:', error);
+        // Fallback to static data
+        console.log('Using fallback hobbies data...');
+        hobbiesData = fallbackHobbiesData;
+        renderHobbies(hobbiesData);
+        attachEventListeners();
+    }
+}
+
+/**
+ * Fetch hobbies from database and cache them
+ */
+async function fetchAndCacheHobbies() {
+    try {
+        console.log('Fetching hobbies from Supabase...');
+        const hobbies = await apiService.getHobbies();
+        console.log('Hobbies loaded successfully:', hobbies);
+        
+        // Add generated icons to hobbies
+        hobbiesData = hobbies.map(hobby => ({
+            ...hobby,
+            icon: generateHobbyIcon(hobby.name)
+        }));
+        
+        // Cache in localStorage (with error handling)
+        try {
+            localStorage.setItem('hobbies_cache', JSON.stringify(hobbies));
+        } catch (e) {
+            console.warn('Failed to cache hobbies:', e);
+        }
+        
+        console.log('Rendering hobbies...');
+        renderHobbies(hobbiesData);
+        
+        console.log('Attaching event listeners...');
+        attachEventListeners();
+        
+        console.log('Hobbies page loaded successfully!');
+    } catch (error) {
+        console.error('Failed to fetch hobbies from database:', error);
+        throw error;
+    }
+}
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     setActiveNav('Hobbies');
-    renderHobbies(hobbiesData);
+    loadHobbies();
 });
 
 /**
@@ -121,14 +176,39 @@ function renderHobbies(hobbies) {
 }
 
 /**
+ * Debounce function to throttle filter execution
+ */
+function debounce(func, delay = 300) {
+    let timeoutId;
+    return function(...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+/**
  * Attach event listeners for search and filter
  */
 function attachEventListeners() {
     const searchInput = document.getElementById('searchInput');
     const categorySelect = document.getElementById('categorySelect');
 
+    if (!searchInput) {
+        console.warn('Search input element not found');
+        return;
+    }
+    if (!categorySelect) {
+        console.warn('Category select element not found');
+        return;
+    }
+
+    console.log('Attaching event listeners...');
+    
+    // Use debounce for search to avoid filtering on every keystroke
+    const debouncedFilter = debounce(filterHobbies, 300);
+    
     searchInput.addEventListener('input', () => {
-        filterHobbies();
+        debouncedFilter();
     });
 
     categorySelect.addEventListener('change', () => {
@@ -137,20 +217,20 @@ function attachEventListeners() {
 }
 
 /**
- * Filter hobbies based on search and category
+ * Filter hobbies based on search and tags
  */
 function filterHobbies() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const selectedCategory = document.getElementById('categorySelect').value;
+    const selectedTag = document.getElementById('categorySelect').value;
 
     const filtered = hobbiesData.filter(hobby => {
         const matchesSearch = hobby.name.toLowerCase().includes(searchTerm) ||
                             hobby.description.toLowerCase().includes(searchTerm) ||
                             hobby.tags.some(tag => tag.toLowerCase().includes(searchTerm));
         
-        const matchesCategory = !selectedCategory || hobby.category === selectedCategory;
+        const matchesTag = !selectedTag || hobby.tags.some(tag => tag.toLowerCase() === selectedTag.toLowerCase());
 
-        return matchesSearch && matchesCategory;
+        return matchesSearch && matchesTag;
     });
 
     renderHobbies(filtered);
@@ -163,4 +243,13 @@ function joinHobby(hobbyName) {
     alert(`You joined the "${hobbyName}" hobby group!`);
     console.log(`User joined: ${hobbyName}`);
     // TODO: Implement actual join functionality with Supabase
+}
+
+/**
+ * Clear hobbies cache (for debugging/testing)
+ */
+function clearHobbiesCache() {
+    localStorage.removeItem('hobbies_cache');
+    console.log('Hobbies cache cleared');
+    location.reload();
 }
