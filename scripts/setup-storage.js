@@ -2,7 +2,7 @@
 
 /**
  * Supabase Storage Setup Script
- * Creates the "avatars" bucket for profile image uploads
+ * Creates the "avatars" and "hobbies" buckets for image uploads
  * 
  * Usage: node scripts/setup-storage.js <supabase-url> <service-role-key>
  */
@@ -17,8 +17,8 @@ async function setupStorage(supabaseUrl, serviceRoleKey) {
     console.log('\n🚀 Hobby Buddy Hub - Storage Setup\n');
     console.log('Setting up Supabase Storage buckets...\n');
 
-    // Check if avatars bucket exists
-    console.log('📦 Checking for "avatars" bucket...');
+    // Check existing buckets
+    console.log('📦 Checking storage buckets...');
     
     const checkResponse = await fetch(`${supabaseUrl}/storage/v1/bucket`, {
       method: 'GET',
@@ -36,44 +36,57 @@ async function setupStorage(supabaseUrl, serviceRoleKey) {
     }
 
     const buckets = await checkResponse.json();
-    const avatarsBucketExists = Array.isArray(buckets) && buckets.some(b => b.name === 'avatars');
-
-    if (avatarsBucketExists) {
-      console.log('✅ "avatars" bucket already exists\n');
-      return true;
-    }
-
-    // Create avatars bucket
-    console.log('Creating "avatars" bucket...');
-    
-    const createResponse = await fetch(`${supabaseUrl}/storage/v1/bucket`, {
-      method: 'POST',
-      headers: {
-        'apikey': serviceRoleKey,
-        'Authorization': `Bearer ${serviceRoleKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const existing = new Set(Array.isArray(buckets) ? buckets.map(b => b.name) : []);
+    const requiredBuckets = [
+      {
         id: 'avatars',
         name: 'avatars',
         public: true,
         file_size_limit: 5242880,
-        allowed_mime_types: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-      }),
-    });
+        allowed_mime_types: ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+      },
+      {
+        id: 'hobbies',
+        name: 'hobbies',
+        public: true,
+        file_size_limit: 10485760,
+        allowed_mime_types: ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+      }
+    ];
 
-    if (!createResponse.ok) {
-      console.error('❌ Failed to create bucket:', createResponse.status);
-      const error = await createResponse.text();
-      console.error('Error:', error);
-      process.exit(1);
+    for (const bucket of requiredBuckets) {
+      if (existing.has(bucket.name)) {
+        console.log(`✅ "${bucket.name}" bucket already exists`);
+        continue;
+      }
+
+      console.log(`Creating "${bucket.name}" bucket...`);
+
+      const createResponse = await fetch(`${supabaseUrl}/storage/v1/bucket`, {
+        method: 'POST',
+        headers: {
+          'apikey': serviceRoleKey,
+          'Authorization': `Bearer ${serviceRoleKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bucket),
+      });
+
+      if (!createResponse.ok) {
+        console.error(`❌ Failed to create "${bucket.name}" bucket:`, createResponse.status);
+        const error = await createResponse.text();
+        console.error('Error:', error);
+        process.exit(1);
+      }
+
+      const bucketData = await createResponse.json();
+      console.log(`✅ "${bucket.name}" bucket created successfully!`);
+      console.log('  Bucket ID:', bucketData.id);
+      console.log('  Bucket name:', bucketData.name);
+      console.log('  Public:', bucketData.public);
     }
 
-    const bucketData = await createResponse.json();
-    console.log('✅ "avatars" bucket created successfully!\n');
-    console.log('  Bucket ID:', bucketData.id);
-    console.log('  Bucket name:', bucketData.name);
-    console.log('  Public:', bucketData.public);
+    console.log('');
     
     return true;
 

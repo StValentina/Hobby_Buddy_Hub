@@ -9,6 +9,7 @@ let usersCache = [];
 let hobbiesCache = [];
 let eventsCache = [];
 let locationsCache = [];
+let tagsCache = [];
 
 let adminViewModal = null;
 let createHobbyModal = null;
@@ -211,6 +212,15 @@ async function loadLocations() {
     }
 }
 
+async function loadTags() {
+    try {
+        tagsCache = await apiService.getTags();
+    } catch (error) {
+        console.error('Failed to load tags:', error);
+        tagsCache = [];
+    }
+}
+
 function showViewModal(title, htmlContent) {
     document.getElementById('adminViewModalLabel').textContent = title;
     document.getElementById('adminViewModalBody').innerHTML = htmlContent;
@@ -243,11 +253,25 @@ function openEditHobby(hobbyId) {
 function openCreateHobby() {
     const nameInput = document.getElementById('createHobbyName');
     const descriptionInput = document.getElementById('createHobbyDescription');
-    const imageUrlInput = document.getElementById('createHobbyImageUrl');
+    const imageInput = document.getElementById('createHobbyImage');
+    const tagsContainer = document.getElementById('createHobbyTagsContainer');
 
     if (nameInput) nameInput.value = '';
     if (descriptionInput) descriptionInput.value = '';
-    if (imageUrlInput) imageUrlInput.value = '';
+    if (imageInput) imageInput.value = '';
+    if (tagsContainer) {
+        tagsContainer.innerHTML = '';
+        // Populate tags as checkboxes
+        tagsCache.forEach(tag => {
+            const checkboxDiv = document.createElement('div');
+            checkboxDiv.className = 'tag-checkbox-item';
+            checkboxDiv.innerHTML = `
+                <input type="checkbox" id="tag-${tag.id}" value="${tag.id}" class="tag-checkbox">
+                <label for="tag-${tag.id}">${escapeHtml(tag.name)}</label>
+            `;
+            tagsContainer.appendChild(checkboxDiv);
+        });
+    }
 
     createHobbyModal.show();
 }
@@ -401,19 +425,40 @@ function setupAdminCrudHandlers() {
     document.getElementById('createHobbyBtn')?.addEventListener('click', async () => {
         const name = document.getElementById('createHobbyName').value.trim();
         const description = document.getElementById('createHobbyDescription').value.trim();
-        const imageUrl = document.getElementById('createHobbyImageUrl').value.trim();
+        const imageInput = document.getElementById('createHobbyImage');
+        const selectedTagIds = Array.from(document.querySelectorAll('.tag-checkbox:checked'))
+            .map(checkbox => checkbox.value)
+            .filter(Boolean);
 
         if (!name) {
             showMessage('Hobby name is required.', 'danger');
             return;
         }
 
+        const createBtn = document.getElementById('createHobbyBtn');
+        const originalText = createBtn.textContent;
+        createBtn.disabled = true;
+        createBtn.textContent = 'Creating...';
+
         try {
-            await apiService.createHobby({
+            // Create hobby first to get real hobby ID for storage path
+            const hobby = await apiService.createHobby({
                 name,
                 description: description || null,
-                image_url: imageUrl || null
+                image_url: null
             });
+
+            // Upload image if provided, then update hobby with storage URL
+            if (imageInput.files.length > 0 && hobby?.id) {
+                const file = imageInput.files[0];
+                const uploadResult = await apiService.uploadHobbyImage(hobby.id, file);
+                await apiService.updateHobby(hobby.id, { image_url: uploadResult.url });
+            }
+
+            // Add tags to hobby if any are selected
+            if (selectedTagIds.length > 0 && hobby?.id) {
+                await apiService.addTagsToHobby(hobby.id, selectedTagIds);
+            }
 
             createHobbyModal.hide();
             showMessage('Hobby created successfully.');
@@ -421,6 +466,9 @@ function setupAdminCrudHandlers() {
         } catch (error) {
             console.error('Failed to create hobby:', error);
             showMessage(`Failed to create hobby: ${error.message}`, 'danger');
+        } finally {
+            createBtn.disabled = false;
+            createBtn.textContent = originalText;
         }
     });
 
@@ -581,6 +629,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    await Promise.all([loadUsers(), loadHobbies(), loadEvents(), loadLocations()]);
+    await Promise.all([loadUsers(), loadHobbies(), loadEvents(), loadLocations(), loadTags()]);
     setupAdminCrudHandlers();
 });

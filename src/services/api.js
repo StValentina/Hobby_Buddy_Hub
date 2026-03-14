@@ -349,6 +349,33 @@ class APIService {
   }
 
   /**
+   * Add tags to a hobby
+   */
+  async addTagsToHobby(hobbyId, tagIds) {
+    try {
+      if (!Array.isArray(tagIds) || tagIds.length === 0) {
+        console.log('No tags to add to hobby');
+        return [];
+      }
+
+      console.log(`Adding tags to hobby ${hobbyId}:`, tagIds);
+      
+      // Create hobby_tags records for each selected tag
+      const tagRecords = tagIds.map(tagId => ({
+        hobby_id: hobbyId,
+        tag_id: tagId
+      }));
+      
+      const result = await this.post('/hobby_tags', tagRecords);
+      console.log('Tags added to hobby:', result);
+      return result;
+    } catch (error) {
+      console.error('Failed to add tags to hobby:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get all events with related hobby and location information
    */
   async getEvents() {
@@ -1616,6 +1643,98 @@ class APIService {
       return createdEvent;
     } catch (error) {
       console.error('Failed to create event:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Upload hobby image to Supabase Storage
+   */
+  async uploadHobbyImage(hobbyId, file) {
+    try {
+      console.log(`Uploading image for hobby ${hobbyId}...`);
+      console.log('File:', file.name, file.size, file.type);
+
+      if (!file) {
+        throw new Error('No file provided');
+      }
+
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error(`Invalid file type. Allowed types: ${allowedTypes.join(', ')}`);
+      }
+
+      // Validate file size (max 10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        throw new Error('File size exceeds 10MB limit');
+      }
+
+      // Generate unique filename
+      const timestamp = Date.now();
+      const filename = `${hobbyId}-${timestamp}-${file.name}`;
+      const path = `hobbies/${hobbyId}/${filename}`;
+
+      // Upload to Supabase Storage
+      const url = `${this.baseURL}/storage/v1/object/${path}`;
+      const headers = {
+        'apikey': this.apiKey,
+      };
+
+      if (this.authToken) {
+        headers['Authorization'] = `Bearer ${this.authToken}`;
+      }
+
+      console.log('Uploading to:', url);
+
+      const uploadResponse = await fetch(url, {
+        method: 'POST',
+        headers: headers,
+        body: file,
+      });
+
+      if (!uploadResponse.ok) {
+        let errorMessage = `Upload error: ${uploadResponse.status} ${uploadResponse.statusText}`;
+        try {
+          const errorBody = await uploadResponse.json();
+          errorMessage = errorBody.message || errorBody.error || errorMessage;
+        } catch {
+          // Keep fallback status text
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Get public URL for the uploaded file
+      const publicUrl = this.getHobbyImageUrl(hobbyId, filename);
+      console.log('Hobby image public URL:', publicUrl);
+
+      return {
+        success: true,
+        filename: filename,
+        path: path,
+        url: publicUrl
+      };
+    } catch (error) {
+      console.error(`Failed to upload image for hobby ${hobbyId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get public URL for hobby image
+   */
+  getHobbyImageUrl(hobbyId, filename) {
+    try {
+      console.log(`Generating public URL for hobby image: ${hobbyId}/${filename}`);
+      
+      // Supabase Storage public URL format
+      const publicUrl = `${this.baseURL}/storage/v1/object/public/hobbies/${hobbyId}/${filename}`;
+      console.log('Generated URL:', publicUrl);
+      
+      return publicUrl;
+    } catch (error) {
+      console.error('Failed to generate hobby image URL:', error);
       throw error;
     }
   }

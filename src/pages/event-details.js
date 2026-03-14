@@ -10,19 +10,37 @@ function getEventIdFromURL() {
     return params.get('id');
 }
 
-// Initialize page
-document.addEventListener('DOMContentLoaded', async () => {
-    window.setActiveNav('Events');
+// Show error message based on authentication status
+function getErrorMessage() {
+    const isAuthenticated = apiService.isAuthenticated();
     
-    const eventId = getEventIdFromURL();
-    if (!eventId) {
-        document.querySelector('main').innerHTML = `
+    if (!isAuthenticated) {
+        return `
+            <div class="container text-center py-5">
+                <h2>You Are Not Registered</h2>
+                <p>Please register or log in to access events.</p>
+                <a href="/pages/auth/register.html" class="btn btn-primary me-2">Register</a>
+                <a href="/pages/auth/login.html" class="btn btn-outline-primary">Log In</a>
+            </div>
+        `;
+    } else {
+        return `
             <div class="container text-center py-5">
                 <h2>Event Not Found</h2>
                 <p>Sorry, we couldn't find the event you're looking for.</p>
                 <a href="/pages/events.html" class="btn btn-primary">Back to Events</a>
             </div>
         `;
+    }
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', async () => {
+    window.setActiveNav('Events');
+    
+    const eventId = getEventIdFromURL();
+    if (!eventId) {
+        document.querySelector('main').innerHTML = getErrorMessage();
         return;
     }
     
@@ -31,13 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (event) {
             await renderEventDetails(event);
         } else {
-            document.querySelector('main').innerHTML = `
-                <div class="container text-center py-5">
-                    <h2>Event Not Found</h2>
-                    <p>Sorry, we couldn't find the event you're looking for.</p>
-                    <a href="/pages/events.html" class="btn btn-primary">Back to Events</a>
-                </div>
-            `;
+            document.querySelector('main').innerHTML = getErrorMessage();
         }
     } catch (error) {
         console.error('Failed to load event:', error);
@@ -54,13 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Render event details
 async function renderEventDetails(event) {
     if (!event) {
-        document.querySelector('main').innerHTML = `
-            <div class="container text-center py-5">
-                <h2>Event Not Found</h2>
-                <p>Sorry, we couldn't find the event you're looking for.</p>
-                <a href="/pages/events.html" class="btn btn-primary">Back to Events</a>
-            </div>
-        `;
+        document.querySelector('main').innerHTML = getErrorMessage();
         return;
     }
 

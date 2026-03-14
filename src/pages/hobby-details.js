@@ -194,6 +194,30 @@ function getHobbyIdFromURL() {
     return params.get('id');
 }
 
+// Show error message based on authentication status
+function getErrorMessage(itemType = 'Hobby') {
+    const isAuthenticated = apiService.isAuthenticated();
+    
+    if (!isAuthenticated) {
+        return `
+            <div class="container text-center py-5">
+                <h2>You Are Not Registered</h2>
+                <p>Please register or log in to access ${itemType.toLowerCase()}s.</p>
+                <a href="/pages/auth/register.html" class="btn btn-primary me-2">Register</a>
+                <a href="/pages/auth/login.html" class="btn btn-outline-primary">Log In</a>
+            </div>
+        `;
+    } else {
+        return `
+            <div class="container text-center py-5">
+                <h2>${itemType} Not Found</h2>
+                <p>Sorry, we couldn't find the ${itemType.toLowerCase()} you're looking for.</p>
+                <a href="/pages/hobbies.html" class="btn btn-primary">Back to ${itemType}s</a>
+            </div>
+        `;
+    }
+}
+
 // Generate icon for hobby based on name
 function generateHobbyIcon(name) {
     const iconMap = {
@@ -210,13 +234,7 @@ function generateHobbyIcon(name) {
 // Render hobby details
 function renderHobbyDetails(hobby) {
     if (!hobby) {
-        document.querySelector('main').innerHTML = `
-            <div class="container text-center py-5">
-                <h2>Hobby Not Found</h2>
-                <p>Sorry, we couldn't find the hobby you're looking for.</p>
-                <a href="/pages/hobbies.html" class="btn btn-primary">Back to Hobbies</a>
-            </div>
-        `;
+        document.querySelector('main').innerHTML = getErrorMessage('Hobby');
         return;
     }
 
@@ -238,21 +256,6 @@ function renderHobbyDetails(hobby) {
     ).join('');
 
     // Stats (with defaults if not provided)
-    const difficulty = document.getElementById('difficultyLevel');
-    if (difficulty && hobby.difficulty) {
-        difficulty.textContent = hobby.difficulty;
-    }
-    
-    const timeCommitment = document.getElementById('timeCommitment');
-    if (timeCommitment && hobby.timeCommitment) {
-        timeCommitment.textContent = hobby.timeCommitment;
-    }
-    
-    const costLevel = document.getElementById('costLevel');
-    if (costLevel && hobby.cost) {
-        costLevel.textContent = hobby.cost;
-    }
-    
     const interestedCount = document.getElementById('interestedCount');
     if (interestedCount) {
         interestedCount.textContent = (hobby.people ? hobby.people.length : 0) + ' people';
@@ -261,14 +264,6 @@ function renderHobbyDetails(hobby) {
     const activeEventsCount = document.getElementById('activeEventsCount');
     if (activeEventsCount) {
         activeEventsCount.textContent = (hobby.events ? hobby.events.length : 0) + ' events';
-    }
-
-    // Popularity stars (with default if not provided)
-    const popularityStars = document.getElementById('popularityStars');
-    if (popularityStars) {
-        const popularity = hobby.popularity || 3;
-        const starsHtml = Array(popularity).fill('<i class="bi bi-star-fill"></i>').join('');
-        popularityStars.innerHTML = starsHtml;
     }
 
     // Events
