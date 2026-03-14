@@ -2,8 +2,6 @@
  * People Page JavaScript
  */
 
-import { Header } from '../../src/components/header.js';
-
 // Sample people data
 const peopleData = [
     {
@@ -158,11 +156,7 @@ let filteredPeople = [];
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize header with authentication support
-    const header = new Header();
-    header.render();
-    
-    setActiveNav('Find People');
+    window.setActiveNav('Find People');
     filteredPeople = peopleData;
     renderPeople(filteredPeople);
     setupEventListeners();
@@ -294,7 +288,7 @@ function renderPeople(people) {
                         </div>
                     </div>
                     <div class="person-card-footer">
-                        <a href="/pages/profile/index.html" class="btn btn-view-profile">
+                        <a href="/pages/profile.html" class="btn btn-view-profile">
                             <i class="bi bi-eye me-2"></i>View Profile
                         </a>
                     </div>

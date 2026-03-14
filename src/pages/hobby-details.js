@@ -3,7 +3,6 @@
  */
 
 import { apiService } from '/src/services/api.js';
-import { Header } from '../../src/components/header.js';
 
 // Hobbies database with detailed information
 const hobbiesDatabase = [
@@ -215,7 +214,7 @@ function renderHobbyDetails(hobby) {
             <div class="container text-center py-5">
                 <h2>Hobby Not Found</h2>
                 <p>Sorry, we couldn't find the hobby you're looking for.</p>
-                <a href="/pages/hobbies/index.html" class="btn btn-primary">Back to Hobbies</a>
+                <a href="/pages/hobbies.html" class="btn btn-primary">Back to Hobbies</a>
             </div>
         `;
         return;
@@ -282,7 +281,7 @@ function renderHobbyDetails(hobby) {
                     <p><i class="bi bi-calendar-event"></i>${event.date}</p>
                     <p><i class="bi bi-geo-alt"></i>${event.location}</p>
                 </div>
-                <a href="/pages/event-details/index.html?id=${event.id}" class="btn btn-sm btn-primary">
+                <a href="/pages/event-details.html?id=${event.id}" class="btn btn-sm btn-primary">
                     View Event <i class="bi bi-arrow-right ms-1"></i>
                 </a>
             </div>
@@ -338,7 +337,7 @@ function setupJoinButton(hobby) {
  */
 async function loadHobbyDetails() {
     try {
-        setActiveNav('Hobbies');
+        window.setActiveNav('Hobbies');
         
         const hobbyId = getHobbyIdFromURL();
         if (!hobbyId) {
@@ -365,9 +364,5 @@ async function loadHobbyDetails() {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize header with authentication support
-    const header = new Header();
-    header.render();
-    
     loadHobbyDetails();
 });

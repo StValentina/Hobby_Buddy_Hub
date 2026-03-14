@@ -2,8 +2,8 @@
  * Simple client-side router for multi-page application
  */
 
-import { IndexPage } from '../pages/index/index.js';
-import { DashboardPage } from '../pages/dashboard/dashboard.js';
+import { IndexPage } from '../pages/home.js';
+import { DashboardPage } from '../pages/dashboard.js';
 
 class AppRouter {
   constructor() {

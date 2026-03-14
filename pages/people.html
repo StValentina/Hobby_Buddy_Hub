@@ -12,9 +12,11 @@
     
     <!-- Global CSS -->
     <link rel="stylesheet" href="/public/css/global.css">
+    <!-- Components CSS -->
+    <link rel="stylesheet" href="/src/styles/components.css">
     
     <!-- Page CSS -->
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="/src/styles/pages/people.css">
 </head>
 <body>
     <!-- Header will be auto-loaded here -->
@@ -125,9 +127,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Global JS -->
-    <script src="/public/js/global.js"></script>
+    <script type="module" src="/public/js/global.js"></script>
+    
+    <!-- Global Components Loader -->
+    <script type="module">
+        import ComponentsLoader from '/src/components/loader.js';
+    </script>
     
     <!-- Page JS with Module Support -->
-    <script type="module" src="./script.js"></script>
+    <script type="module" src="/src/pages/people.js"></script>
 </body>
 </html>

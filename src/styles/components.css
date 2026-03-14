@@ -1,0 +1,186 @@
+/**
+ * Global Components Styles
+ * Common styles for Header, Footer, and other shared components
+ */
+
+/* ============================================================================
+   HEADER / NAVBAR STYLES
+   ============================================================================ */
+
+.navbar {
+  background-color: #212529;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.navbar-brand:hover {
+  color: #ffc107 !important;
+}
+
+.nav-link {
+  color: #e9ecef !important;
+  transition: color 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.nav-link:hover {
+  color: #ffc107 !important;
+}
+
+.navbar-toggler {
+  border-color: rgba(255, 193, 7, 0.25);
+}
+
+.navbar-toggler:focus {
+  box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+}
+
+/* Dropdown menu styles */
+.dropdown-menu {
+  background-color: #2d3436;
+  border-color: #dee2e6;
+}
+
+.dropdown-item {
+  color: #e9ecef;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: #404040;
+  color: #ffc107;
+}
+
+.dropdown-divider {
+  border-color: #404040;
+}
+
+/* Auth buttons in navbar */
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+/* ============================================================================
+   FOOTER STYLES
+   ============================================================================ */
+
+footer {
+  background-color: #212529;
+  color: #e9ecef;
+  margin-top: auto;
+  border-top: 1px solid #dee2e6;
+}
+
+footer h5,
+footer h6 {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+footer a {
+  color: #adb5bd;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+footer a:hover {
+  color: #ffc107;
+}
+
+footer .social-links {
+  display: flex;
+  gap: 1rem;
+}
+
+footer .social-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(255, 193, 7, 0.1);
+  border-radius: 50%;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  color: #adb5bd;
+}
+
+footer .social-links a:hover {
+  background-color: rgba(255, 193, 7, 0.3);
+  color: #ffc107;
+}
+
+/* Footer link sections */
+footer .list-unstyled li {
+  margin-bottom: 0.5rem;
+}
+
+/* ============================================================================
+   RESPONSIVE STYLES
+   ============================================================================ */
+
+@media (max-width: 991.98px) {
+  .navbar-brand {
+    font-size: 1.25rem;
+  }
+
+  .nav-link {
+    font-size: 0.9rem;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  .btn-primary.btn-sm {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.75rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  footer {
+    text-align: center;
+  }
+
+  footer .social-links {
+    justify-content: center;
+  }
+}
+
+/* ============================================================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================================================ */
+
+.navbar a:focus-visible {
+  outline: 2px solid #ffc107;
+  outline-offset: 2px;
+}
+
+footer a:focus-visible {
+  outline: 2px solid #ffc107;
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+   DARK MODE SUPPORT (future enhancement)
+   ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  .navbar {
+    background-color: #1a1a1a;
+  }
+
+  footer {
+    background-color: #1a1a1a;
+  }
+}

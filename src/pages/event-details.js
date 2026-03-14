@@ -2,8 +2,6 @@
  * Event Details Page JavaScript
  */
 
-import { Header } from '../../src/components/header.js';
-
 // Extended events data with detailed information
 const eventsDatabase = [
     {
@@ -154,7 +152,7 @@ function renderEventDetails(event) {
             <div class="container text-center py-5">
                 <h2>Event Not Found</h2>
                 <p>Sorry, we couldn't find the event you're looking for.</p>
-                <a href="/pages/events/index.html" class="btn btn-primary">Back to Events</a>
+                <a href="/pages/events.html" class="btn btn-primary">Back to Events</a>
             </div>
         `;
         return;
@@ -218,11 +216,7 @@ function setupButtonHandlers(event) {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize header with authentication support
-    const header = new Header();
-    header.render();
-    
-    setActiveNav('Events');
+    window.setActiveNav('Events');
     
     const eventId = getEventIdFromURL();
     if (eventId) {

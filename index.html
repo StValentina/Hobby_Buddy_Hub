@@ -11,8 +11,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Global Styles -->
     <link rel="stylesheet" href="/public/css/global.css">
+    <!-- Components Styles -->
+    <link rel="stylesheet" href="/src/styles/components.css">
     <!-- Page Styles -->
-    <link rel="stylesheet" href="pages/index/style.css">
+    <link rel="stylesheet" href="/src/styles/pages/index/style.css">
 </head>
 <body>
     <!-- Debug Info Panel (TEMPORARY) -->
@@ -42,10 +44,10 @@
                             Find your next hobby partner or organize an activity.
                         </p>
                         <div class="d-flex gap-3 flex-wrap justify-content-center">
-                            <a href="/pages/hobbies/index.html" class="btn btn-primary btn-lg fw-bold">
+                            <a href="/pages/hobbies.html" class="btn btn-primary btn-lg fw-bold">
                                 Browse Hobbies <i class="bi bi-compass ms-2"></i>
                             </a>
-                            <a href="/pages/events/index.html" class="btn btn-outline-primary btn-lg fw-bold">
+                            <a href="/pages/events.html" class="btn btn-outline-primary btn-lg fw-bold">
                                 Explore Events <i class="bi bi-calendar-event ms-2"></i>
                             </a>
                         </div>
@@ -100,7 +102,7 @@
         <section class="py-5 bg-primary text-white text-center">
             <div class="container">
                 <h2 class="mb-4 fw-bold">Ready to Connect with Hobby Enthusiasts?</h2>
-                <a href="/pages/hobbies/index.html" class="btn btn-light btn-lg fw-bold">
+                <a href="/pages/hobbies.html" class="btn btn-light btn-lg fw-bold">
                     Join Hobby Buddy Hub Today <i class="bi bi-arrow-right ms-2"></i>
                 </a>
             </div>
@@ -168,8 +170,12 @@ localStorage keys: ${Object.keys(localStorage).join(', ') || 'NONE'}
     </script>
     
     <!-- Global JS -->
-    <script src="/public/js/global.js"></script>
+    <script type="module" src="/public/js/global.js"></script>
+    <!-- Global Components Loader -->
+    <script type="module">
+        import ComponentsLoader from '/src/components/loader.js';
+    </script>
     <!-- Page JS with Module Support -->
-    <script type="module" src="pages/index/script.js"></script>
+    <script type="module" src="/src/pages/home.js"></script>
 </body>
 </html>

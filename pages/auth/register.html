@@ -6,9 +6,11 @@
     <title>Register - Hobby Buddy Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <link href="../../public/css/global.css" rel="stylesheet">
-    <link href="./register.css" rel="stylesheet">
+    <link href="/src/styles/pages/auth/register.css" rel="stylesheet">
 </head>
 <body>
+    <header id="header-container"></header>
+    
     <div class="register-container">
         <div class="register-card">
             <h1>Create Account</h1>
@@ -17,6 +19,18 @@
             <div id="alertContainer"></div>
             
             <form id="registerForm">
+                <div class="form-group">
+                    <label for="fullName" class="form-label">Full Name</label>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        id="fullName" 
+                        name="fullName" 
+                        placeholder="Enter your full name"
+                        required
+                    >
+                </div>
+
                 <div class="form-group">
                     <label for="email" class="form-label">Email Address</label>
                     <input 
@@ -73,7 +87,17 @@
         </div>
     </div>
     
-    <script type="module" src="./register.js"></script>
+    <footer id="footer-container"></footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Global JS -->
+    <script type="module" src="/public/js/global.js"></script>
+    <!-- Global Components Loader -->
+    <script type="module">
+        import ComponentsLoader from '/src/components/loader.js';
+    </script>
+    <script type="module" src="/src/pages/auth/register.js"></script>
     <script>
         // Ensure no lingering auth token on register page
         // Users shouldn't be on register page if already logged in

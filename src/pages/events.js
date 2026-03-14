@@ -3,7 +3,6 @@
  */
 
 import { apiService } from '/src/services/api.js';
-import { Header } from '../../src/components/header.js';
 
 // Events data (will be loaded from database)
 let eventsData = [];
@@ -95,11 +94,7 @@ async function fetchAndCacheEvents() {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize header with authentication support
-    const header = new Header();
-    header.render();
-    
-    setActiveNav('Events');
+    window.setActiveNav('Events');
     loadEvents();
 });
 
@@ -124,7 +119,7 @@ function renderEvents(events) {
 
     container.innerHTML = events.map(event => `
         <div class="col-lg-4 col-md-6">
-            <a href="/pages/event-details/index.html?id=${event.id}" class="event-card-link">
+            <a href="/pages/event-details.html?id=${event.id}" class="event-card-link">
                 <div class="event-card">
                     <div class="event-card-header">
                         <span class="event-badge">${event.category}</span>

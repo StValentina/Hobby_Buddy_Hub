@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hobbies - Hobby Buddy Hub</title>
+    <title>Events - Hobby Buddy Hub</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,8 +11,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Global Styles -->
     <link rel="stylesheet" href="/public/css/global.css">
+    <!-- Components Styles -->
+    <link rel="stylesheet" href="/src/styles/components.css">
     <!-- Page Styles -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/src/styles/pages/events.css">
 </head>
 <body>
     <header id="header-container"></header>
@@ -21,8 +23,8 @@
         <!-- Page Header -->
         <section class="page-header bg-light py-5">
             <div class="container text-center">
-                <h1 class="display-4 fw-bold mb-2">Explore Hobbies</h1>
-                <p class="lead text-muted">Discover hobbies that match your interests and connect with enthusiasts</p>
+                <h1 class="display-4 fw-bold mb-2">Upcoming Events</h1>
+                <p class="lead text-muted">Join hobby events and meet fellow enthusiasts</p>
             </div>
         </section>
 
@@ -35,7 +37,7 @@
                             type="text" 
                             class="form-control form-control-lg" 
                             id="searchInput" 
-                            placeholder="Search hobbies, tags, descriptions..."
+                            placeholder="Search events by title, location, or category..."
                         >
                     </div>
                     <div class="col-md-4">
@@ -43,23 +45,30 @@
                             class="form-select form-select-lg" 
                             id="categorySelect"
                         >
-                            <option value="">All Tags</option>
-                            <option value="outdoor">Outdoor</option>
-                            <option value="creative">Creative</option>
-                            <option value="intellectual">Intellectual</option>
-                            <option value="fitness">Fitness</option>
-                            <option value="social">Social</option>
+                            <option value="">All Categories</option>
+                            <option value="Hiking">Hiking</option>
+                            <option value="Photography">Photography</option>
+                            <option value="Chess">Chess</option>
+                            <option value="Cooking">Cooking</option>
+                            <option value="Painting">Painting</option>
+                            <option value="Dancing">Dancing</option>
+                            <option value="Travel & Exploration">Travel & Exploration</option>
+                            <option value="Yoga & Meditation">Yoga & Meditation</option>
+                            <option value="Cycling">Cycling</option>
+                            <option value="Rock Climbing">Rock Climbing</option>
+                            <option value="Music & Instruments">Music & Instruments</option>
+                            <option value="Literature & Reading">Literature & Reading</option>
                         </select>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Hobbies Grid -->
+        <!-- Events List -->
         <section class="py-5">
             <div class="container">
-                <div class="row g-4" id="hobbiesGrid">
-                    <!-- Hobby cards will be inserted here by JavaScript -->
+                <div class="row g-4" id="eventsContainer">
+                    <!-- Event cards will be inserted here by JavaScript -->
                 </div>
             </div>
         </section>
@@ -70,8 +79,12 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Global JS -->
-    <script src="/public/js/global.js"></script>
+    <script type="module" src="/public/js/global.js"></script>
+    <!-- Global Components Loader -->
+    <script type="module">
+        import ComponentsLoader from '/src/components/loader.js';
+    </script>
     <!-- Page JS -->
-    <script type="module" src="script.js"></script>
+    <script type="module" src="/src/pages/events.js"></script>
 </body>
 </html>

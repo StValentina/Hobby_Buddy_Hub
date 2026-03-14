@@ -43,10 +43,10 @@ export class Header {
             <i class="bi bi-person-circle me-1"></i>${userEmail}
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="/pages/profile/index.html">
+            <li><a class="dropdown-item" href="/pages/profile.html">
               <i class="bi bi-person me-2"></i>Profile
             </a></li>
-            <li><a class="dropdown-item" href="/pages/dashboard/index.html">
+            <li><a class="dropdown-item" href="/pages/dashboard.html">
               <i class="bi bi-speedometer2 me-2"></i>Dashboard
             </a></li>
             <li><a class="dropdown-item" href="#">
@@ -103,23 +103,23 @@ export class Header {
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/pages/hobbies/index.html">
+                <a class="nav-link" href="/pages/hobbies.html">
                   <i class="bi bi-star me-1"></i>Hobbies
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/pages/events/index.html">
+                <a class="nav-link" href="/pages/events.html">
                   <i class="bi bi-calendar-event me-1"></i>Events
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/pages/people/index.html">
+                <a class="nav-link" href="/pages/people.html">
                   <i class="bi bi-people me-1"></i>Find People
                 </a>
               </li>
               ${isAuthenticated ? `
               <li class="nav-item">
-                <a class="nav-link" href="/pages/dashboard/index.html">
+                <a class="nav-link" href="/pages/dashboard.html">
                   <i class="bi bi-speedometer2 me-1"></i>Dashboard
                 </a>
               </li>

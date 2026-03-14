@@ -1,6 +1,12 @@
 import { apiService } from '/src/services/api.js';
 
+// Initialize page
+document.addEventListener('DOMContentLoaded', () => {
+    window.setActiveNav('Register');
+});
+
 const form = document.getElementById('registerForm');
+const fullNameInput = document.getElementById('fullName');
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
 const confirmPasswordInput = document.getElementById('confirmPassword');
@@ -15,7 +21,10 @@ const passwordReqs = document.getElementById('passwordReqs');
 function showAlert(message, type = 'error') {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type}`;
-    alertDiv.textContent = message;
+    alertDiv.innerHTML = `
+        <strong>${type === 'error' ? 'Error:' : 'Success:'}</strong> ${message}
+        ${type === 'error' ? '<br><small>Check the browser console (F12) for more details</small>' : ''}
+    `;
     alertContainer.innerHTML = '';
     alertContainer.appendChild(alertDiv);
     
@@ -111,9 +120,22 @@ function validatePasswordRequirements(password) {
  * Validate form inputs
  */
 function validateForm() {
+    const fullName = fullNameInput.value.trim();
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
     const confirmPassword = confirmPasswordInput.value.trim();
+    
+    if (!fullName) {
+        showAlert('Full name is required');
+        fullNameInput.focus();
+        return false;
+    }
+
+    if (fullName.length < 2) {
+        showAlert('Full name must be at least 2 characters long');
+        fullNameInput.focus();
+        return false;
+    }
     
     if (!email) {
         showAlert('Email address is required');
@@ -173,14 +195,15 @@ form.addEventListener('submit', async (e) => {
         return;
     }
     
+    const fullName = fullNameInput.value.trim();
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
     
     try {
         setLoading(true);
         
-        // Attempt registration
-        const response = await apiService.register(email, password);
+        // Attempt registration with full_name metadata
+        const response = await apiService.register(email, password, fullName);
         
         console.log('Registration successful:', response);
         
@@ -193,20 +216,26 @@ form.addEventListener('submit', async (e) => {
         
     } catch (error) {
         console.error('Registration failed:', error);
+        console.error('Error details:', error.message);
         
         let errorMessage = 'Registration failed. Please try again.';
         
-        // Check if error message contains specific auth errors
-        if (error.message.includes('already registered')) {
+        // Handle specific HTTP error codes
+        if (error.message.includes('429')) {
+            errorMessage = 'Too many registration attempts. Please wait a few minutes before trying again.';
+        } else if (error.message.includes('already registered') || error.message.includes('already exists')) {
             errorMessage = 'This email address is already registered. Please sign in instead.';
         } else if (error.message.includes('weak password')) {
             errorMessage = 'Your password is too weak. Please use a stronger password.';
         } else if (error.message.includes('validation')) {
             errorMessage = 'Please check your email and password.';
+        } else if (error.message.includes('User already exists')) {
+            errorMessage = 'This email is already registered. Please log in instead.';
         } else if (error.message) {
             errorMessage = error.message;
         }
         
+        console.error('Error shown to user:', errorMessage);
         showAlert(errorMessage);
     } finally {
         setLoading(false);

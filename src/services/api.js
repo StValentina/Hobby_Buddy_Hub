@@ -257,7 +257,7 @@ class APIService {
   /**
    * Register a new user
    */
-  async register(email, password) {
+  async register(email, password, fullName = '') {
     try {
       console.log('Registering user:', email);
       
@@ -270,12 +270,19 @@ class APIService {
         body: JSON.stringify({
           email: email,
           password: password,
+          data: {
+            full_name: fullName || email.split('@')[0],
+          },
         }),
       });
 
+      console.log('Registration response status:', response.status);
+      console.log('Registration response OK:', response.ok);
+
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Registration failed');
+        console.error('Registration error response:', error);
+        throw new Error(error.message || error.error_description || `Registration failed (${response.status})`);
       }
 
       const data = await response.json();

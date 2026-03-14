@@ -2,8 +2,6 @@
  * Profile Page JavaScript
  */
 
-import { Header } from '../../src/components/header.js';
-
 // User profile data (placeholder)
 const userProfile = {
     name: 'John Anderson',
@@ -18,11 +16,7 @@ const userProfile = {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize header with authentication support
-    const header = new Header();
-    header.render();
-    
-    setActiveNav('Profile');
+    window.setActiveNav('Profile');
     initializeProfile();
     setupEventListeners();
 });

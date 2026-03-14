@@ -3,7 +3,6 @@
  */
 
 import { apiService } from '/src/services/api.js';
-import { Header } from '../../src/components/header.js';
 
 // Hobbies data (will be loaded from database)
 let hobbiesData = [];
@@ -128,11 +127,7 @@ async function fetchAndCacheHobbies() {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize header with authentication support
-    const header = new Header();
-    header.render();
-    
-    setActiveNav('Hobbies');
+    window.setActiveNav('Hobbies');
     loadHobbies();
 });
 
@@ -157,7 +152,7 @@ function renderHobbies(hobbies) {
 
     grid.innerHTML = hobbies.map(hobby => `
         <div class="col-lg-3 col-md-6">
-            <a href="/pages/hobby-details/index.html?id=${hobby.id}" class="hobby-card-link">
+            <a href="/pages/hobby-details.html?id=${hobby.id}" class="hobby-card-link">
                 <div class="hobby-card">
                     <div class="hobby-card-image">
                         ${hobby.icon}
