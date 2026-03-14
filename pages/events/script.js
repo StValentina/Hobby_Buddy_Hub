@@ -2,94 +2,105 @@
  * Events Page JavaScript
  */
 
-// Sample events data
-const eventsData = [
-    {
-        id: 1,
-        title: 'Sunday Hiking – Vitosha',
-        category: 'Hiking',
-        location: 'Vitosha, Sofia',
-        date: 'Mar 15, 2026',
-        time: '10:00 AM',
-        participants: 12,
-        icon: '🥾'
-    },
-    {
-        id: 2,
-        title: 'Board Games Night',
-        category: 'Games',
-        location: 'Downtown Café, Sofia',
-        date: 'Mar 16, 2026',
-        time: '6:00 PM',
-        participants: 8,
-        icon: '🎲'
-    },
-    {
-        id: 3,
-        title: 'Morning Jogging',
-        category: 'Fitness',
-        location: 'City Park, Sofia',
-        date: 'Mar 17, 2026',
-        time: '7:00 AM',
-        participants: 15,
-        icon: '🏃'
-    },
-    {
-        id: 4,
-        title: 'Photography Walk',
-        category: 'Photography',
-        location: 'Old Town, Sofia',
-        date: 'Mar 18, 2026',
-        time: '2:00 PM',
-        participants: 10,
-        icon: '📸'
-    },
-    {
-        id: 5,
-        title: 'Cooking Class - Italian Pasta',
-        category: 'Cooking',
-        location: 'Kitchen Studio, Sofia',
-        date: 'Mar 20, 2026',
-        time: '6:30 PM',
-        participants: 6,
-        icon: '🍳'
-    },
-    {
-        id: 6,
-        title: 'Painting Workshop',
-        category: 'Art',
-        location: 'Art Studio, Sofia',
-        date: 'Mar 22, 2026',
-        time: '4:00 PM',
-        participants: 9,
-        icon: '🎨'
-    },
-    {
-        id: 7,
-        title: 'Book Club Discussion',
-        category: 'Literature',
-        location: 'Library, Sofia',
-        date: 'Mar 23, 2026',
-        time: '7:00 PM',
-        participants: 7,
-        icon: '📚'
-    },
-    {
-        id: 8,
-        title: 'Dancing Lessons - Salsa',
-        category: 'Dancing',
-        location: 'Dance Studio, Sofia',
-        date: 'Mar 25, 2026',
-        time: '8:00 PM',
-        participants: 11,
-        icon: '💃'
+import { apiService } from '/src/services/api.js';
+import { Header } from '../../src/components/header.js';
+
+// Events data (will be loaded from database)
+let eventsData = [];
+
+/**
+ * Generate icon for event based on hobby name
+ */
+function generateEventIcon(category) {
+    const iconMap = {
+        'hiking': '🥾', 'photography': '📸', 'chess': '♟️', 'cooking': '🍳',
+        'painting': '🎨', 'dancing': '💃', 'literature & reading': '📚', 'travel & exploration': '✈️',
+        'yoga & meditation': '🧘', 'cycling': '🚴', 'rock climbing': '🧗', 'music & instruments': '🎵'
+    };
+    
+    const lowerCategory = category.toLowerCase();
+    return iconMap[lowerCategory] || '📅';
+}
+
+/**
+ * Load events from database
+ */
+async function loadEvents() {
+    try {
+        console.log('Loading events...');
+        
+        // Check localStorage cache first
+        const cachedEvents = localStorage.getItem('events_cache');
+        if (cachedEvents) {
+            console.log('Using cached events...');
+            const parsed = JSON.parse(cachedEvents);
+            eventsData = parsed.map(event => ({
+                ...event,
+                icon: generateEventIcon(event.category)
+            }));
+            renderEvents(eventsData);
+            attachEventListeners();
+            
+            // Update cache in background
+            fetchAndCacheEvents();
+            return;
+        }
+        
+        // Fetch from database
+        await fetchAndCacheEvents();
+    } catch (error) {
+        console.error('Failed to load events:', error);
+        // Fallback to static data
+        console.log('Using fallback events data...');
+        eventsData = [];
+        renderEvents(eventsData);
+        attachEventListeners();
     }
-];
+}
+
+/**
+ * Fetch events from database and cache them
+ */
+async function fetchAndCacheEvents() {
+    try {
+        console.log('Fetching events from Supabase...');
+        const events = await apiService.getEvents();
+        console.log('Events loaded successfully:', events);
+        
+        // Add generated icons to events
+        eventsData = events.map(event => ({
+            ...event,
+            icon: generateEventIcon(event.category)
+        }));
+        
+        // Cache in localStorage
+        try {
+            localStorage.setItem('events_cache', JSON.stringify(events));
+        } catch (e) {
+            console.warn('Failed to cache events:', e);
+        }
+        
+        console.log('Rendering events...');
+        renderEvents(eventsData);
+        
+        console.log('Attaching event listeners...');
+        attachEventListeners();
+        
+        console.log('Events page loaded successfully!');
+    } catch (error) {
+        console.error('Failed to fetch events from database:', error);
+        throw error;
+    }
+}
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize header with authentication support
+    const header = new Header();
+    header.render();
+    
     setActiveNav('Events');
-    renderEvents(eventsData);
+    loadEvents();
 });
 
 /**
@@ -153,4 +164,64 @@ function joinEvent(eventTitle) {
     alert(`You joined: "${eventTitle}"`);
     console.log(`User joined event: ${eventTitle}`);
     // TODO: Implement actual join functionality with Supabase
+}
+/**
+ * Debounce function to throttle filter execution
+ */
+function debounce(func, delay = 300) {
+    let timeoutId;
+    return function(...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+/**
+ * Attach event listeners for search and filter
+ */
+function attachEventListeners() {
+    const searchInput = document.getElementById('searchInput');
+    const categorySelect = document.getElementById('categorySelect');
+
+    if (searchInput) {
+        const debouncedFilter = debounce(filterEvents, 300);
+        searchInput.addEventListener('input', () => {
+            debouncedFilter();
+        });
+    }
+
+    if (categorySelect) {
+        categorySelect.addEventListener('change', () => {
+            filterEvents();
+        });
+    }
+}
+
+/**
+ * Filter events based on search and category
+ */
+function filterEvents() {
+    const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+    const selectedCategory = document.getElementById('categorySelect')?.value || '';
+
+    const filtered = eventsData.filter(event => {
+        const matchesSearch = event.title.toLowerCase().includes(searchTerm) ||
+                            event.location.toLowerCase().includes(searchTerm) ||
+                            event.category.toLowerCase().includes(searchTerm);
+        
+        const matchesCategory = !selectedCategory || event.category.toLowerCase() === selectedCategory.toLowerCase();
+
+        return matchesSearch && matchesCategory;
+    });
+
+    renderEvents(filtered);
+}
+
+/**
+ * Clear events cache (for debugging/testing)
+ */
+function clearEventsCache() {
+    localStorage.removeItem('events_cache');
+    console.log('Events cache cleared');
+    location.reload();
 }

@@ -26,6 +26,42 @@
             </div>
         </section>
 
+        <!-- Search and Filter Section -->
+        <section class="py-4 bg-white border-bottom">
+            <div class="container">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <input 
+                            type="text" 
+                            class="form-control form-control-lg" 
+                            id="searchInput" 
+                            placeholder="Search events by title, location, or category..."
+                        >
+                    </div>
+                    <div class="col-md-4">
+                        <select 
+                            class="form-select form-select-lg" 
+                            id="categorySelect"
+                        >
+                            <option value="">All Categories</option>
+                            <option value="Hiking">Hiking</option>
+                            <option value="Photography">Photography</option>
+                            <option value="Chess">Chess</option>
+                            <option value="Cooking">Cooking</option>
+                            <option value="Painting">Painting</option>
+                            <option value="Dancing">Dancing</option>
+                            <option value="Travel & Exploration">Travel & Exploration</option>
+                            <option value="Yoga & Meditation">Yoga & Meditation</option>
+                            <option value="Cycling">Cycling</option>
+                            <option value="Rock Climbing">Rock Climbing</option>
+                            <option value="Music & Instruments">Music & Instruments</option>
+                            <option value="Literature & Reading">Literature & Reading</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Events List -->
         <section class="py-5">
             <div class="container">
@@ -43,6 +79,6 @@
     <!-- Global JS -->
     <script src="/public/js/global.js"></script>
     <!-- Page JS -->
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

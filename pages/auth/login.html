@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Hobby Buddy Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="../../public/css/global.css" rel="stylesheet">
+    <link href="./login.css" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <h1>Welcome Back</h1>
+            <p>Sign in to your account</p>
+            
+            <div id="alertContainer"></div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input 
+                        type="email" 
+                        class="form-control" 
+                        id="email" 
+                        name="email" 
+                        placeholder="Enter your email"
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input 
+                        type="password" 
+                        class="form-control" 
+                        id="password" 
+                        name="password" 
+                        placeholder="Enter your password"
+                        required
+                    >
+                </div>
+                
+                <button type="submit" class="btn-login" id="submitBtn">
+                    <span class="loading-spinner" id="spinner"></span>
+                    Sign In
+                </button>
+            </form>
+            
+            <div class="signup-link">
+                Don't have an account? <a href="register.html">Sign up here</a>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="./login.js"></script>
+    <script>
+        // Ensure no lingering auth token on login page  
+        // Users shouldn't be on login page if already logged in
+        const token = localStorage.getItem('auth_token');
+        if (token && token.includes('.')) {
+            // User is already logged in, redirect to home
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>

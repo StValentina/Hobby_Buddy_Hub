@@ -2,6 +2,8 @@
  * Event Details Page JavaScript
  */
 
+import { Header } from '../../src/components/header.js';
+
 // Extended events data with detailed information
 const eventsDatabase = [
     {
@@ -216,6 +218,10 @@ function setupButtonHandlers(event) {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize header with authentication support
+    const header = new Header();
+    header.render();
+    
     setActiveNav('Events');
     
     const eventId = getEventIdFromURL();

@@ -3,6 +3,7 @@
  */
 
 import { apiService } from '/src/services/api.js';
+import { Header } from '../../src/components/header.js';
 
 // Hobbies database with detailed information
 const hobbiesDatabase = [
@@ -364,5 +365,9 @@ async function loadHobbyDetails() {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize header with authentication support
+    const header = new Header();
+    header.render();
+    
     loadHobbyDetails();
 });

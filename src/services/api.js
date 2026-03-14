@@ -15,13 +15,16 @@ class APIService {
    * Get stored authentication token
    */
   getAuthToken() {
-    return localStorage.getItem('auth_token');
+    const token = localStorage.getItem('auth_token');
+    console.log('getAuthToken() called - returning:', token ? 'TOKEN EXISTS' : 'NO TOKEN');
+    return token;
   }
 
   /**
    * Set authentication token
    */
   setAuthToken(token) {
+    console.log('setAuthToken() - storing token:', token ? 'YES' : 'NO');
     localStorage.setItem('auth_token', token);
     this.authToken = token;
   }
@@ -30,6 +33,7 @@ class APIService {
    * Clear authentication token
    */
   clearAuthToken() {
+    console.log('clearAuthToken() - removing token');
     localStorage.removeItem('auth_token');
     this.authToken = null;
   }
@@ -208,6 +212,179 @@ class APIService {
     } catch (error) {
       console.error(`Failed to fetch hobby ${hobbyId}:`, error);
       throw error;
+    }
+  }
+
+  /**
+   * Get all events with related hobby and location information
+   */
+  async getEvents() {
+    try {
+      console.log('Fetching events from Supabase...');
+      
+      // Fetch events with hobby and location details
+      const events = await this.get('/events?select=id,title,description,event_date,hobbies(name),locations(city,address)');
+      console.log('Events fetched:', events);
+      
+      if (!events || events.length === 0) {
+        console.warn('No events found in database');
+        return [];
+      }
+      
+      // Format events for display
+      const formattedEvents = events.map(event => ({
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        category: event.hobbies?.name || 'Unknown',
+        location: event.locations?.city || 'TBD',
+        date: new Date(event.event_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        time: new Date(event.event_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        participants: 0
+      }));
+      
+      return formattedEvents;
+    } catch (error) {
+      console.error('Failed to fetch events:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * User Authentication Methods
+   */
+
+  /**
+   * Register a new user
+   */
+  async register(email, password) {
+    try {
+      console.log('Registering user:', email);
+      
+      const response = await fetch(`${this.baseURL}/auth/v1/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': this.apiKey,
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Registration failed');
+      }
+
+      const data = await response.json();
+      console.log('User registered successfully:', data);
+      
+      // Store auth token
+      if (data.session?.access_token) {
+        this.setAuthToken(data.session.access_token);
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Login user
+   */
+  async login(email, password) {
+    try {
+      console.log('Logging in user:', email);
+      
+      const response = await fetch(`${this.baseURL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': this.apiKey,
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error_description || error.message || 'Login failed');
+      }
+
+      const data = await response.json();
+      console.log('User logged in successfully');
+      
+      // Store auth token
+      if (data.access_token) {
+        this.setAuthToken(data.access_token);
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Logout user
+   */
+  logout() {
+    console.log('Logging out user...');
+    this.clearAuthToken();
+  }
+
+  /**
+   * Check if user is authenticated
+   */
+  isAuthenticated() {
+    if (!this.authToken) {
+      console.log('isAuthenticated() - NO TOKEN');
+      return false;
+    }
+    
+    // Check if token has valid JWT format (3 parts separated by dots)
+    const isValidJWT = this.authToken.split('.').length === 3;
+    console.log('isAuthenticated() - TOKEN EXISTS, valid JWT:', isValidJWT);
+    
+    if (!isValidJWT) {
+      console.warn('isAuthenticated() - INVALID TOKEN FORMAT, clearing...');
+      this.clearAuthToken();
+      return false;
+    }
+    
+    return true;
+  }
+
+  /**
+   * Get current user from token (basic info)
+   */
+  getCurrentUser() {
+    if (!this.authToken) {
+      return null;
+    }
+    
+    try {
+      // Decode JWT token manually (basic parsing without verification)
+      const parts = this.authToken.split('.');
+      if (parts.length !== 3) {
+        return null;
+      }
+      
+      const decoded = JSON.parse(atob(parts[1]));
+      return {
+        id: decoded.sub,
+        email: decoded.email,
+      };
+    } catch (error) {
+      console.error('Failed to parse auth token:', error);
+      return null;
     }
   }
 }

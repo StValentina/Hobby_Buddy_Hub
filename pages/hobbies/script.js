@@ -3,6 +3,7 @@
  */
 
 import { apiService } from '/src/services/api.js';
+import { Header } from '../../src/components/header.js';
 
 // Hobbies data (will be loaded from database)
 let hobbiesData = [];
@@ -127,6 +128,10 @@ async function fetchAndCacheHobbies() {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize header with authentication support
+    const header = new Header();
+    header.render();
+    
     setActiveNav('Hobbies');
     loadHobbies();
 });

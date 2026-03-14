@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Diagnostics - Hobby Buddy Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+        .section h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .btn-group-vertical {
+            width: 100%;
+        }
+        .btn-group-vertical .btn {
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .status-good {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-bad {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .status-info {
+            color: #17a2b8;
+            font-weight: bold;
+        }
+        input {
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Auth Diagnostics Dashboard</h1>
+        
+        <!-- System Status -->
+        <div class="section">
+            <h3>📊 System Status</h3>
+            <div id="systemStatus"></div>
+        </div>
+
+        <!-- Test Registration -->
+        <div class="section">
+            <h3>📝 Test Registration</h3>
+            <form id="testRegisterForm">
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="regEmail" placeholder="test@example.com" value="testuser@example.com">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="regPassword" placeholder="TestPassword123" value="TestPassword123">
+                </div>
+                <button type="button" class="btn btn-primary w-100" onclick="testRegster()">
+                    Try Registration
+                </button>
+            </form>
+            <div id="regResult"></div>
+        </div>
+
+        <!-- Test Login -->
+        <div class="section">
+            <h3>🔐 Test Login</h3>
+            <form id="testLoginForm">
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="loginEmail" placeholder="test@example.com" value="testuser@example.com">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="loginPassword" placeholder="TestPassword123" value="TestPassword123">
+                </div>
+                <button type="button" class="btn btn-success w-100" onclick="testLogin()">
+                    Try Login
+                </button>
+            </form>
+            <div id="loginResult"></div>
+        </div>
+
+        <!-- localStorage Inspection -->
+        <div class="section">
+            <h3>💾 localStorage Inspection</h3>
+            <div id="storageStatus"></div>
+            <button class="btn btn-warning mt-3 w-100" onclick="clearStorage()">Clear All Storage</button>
+        </div>
+
+        <!-- Console Output -->
+        <div class="section">
+            <h3>📋 Console Output</h3>
+            <pre id="consoleOutput" style="height: 200px; overflow-y: auto;"></pre>
+            <button class="btn btn-secondary mt-3 w-100" onclick="clearConsole()">Clear Console</button>
+        </div>
+
+        <!-- Network Test -->
+        <div class="section">
+            <h3>🌐 Network Test</h3>
+            <button class="btn btn-info w-100" onclick="testSupabaseConnection()">Test Supabase Connection</button>
+            <div id="networkResult" class="mt-3"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { apiService } from '/src/services/api.js';
+
+        // Capture console logs
+        const logs = [];
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        console.log = function(...args) {
+            originalLog(...args);
+            logs.push('[LOG] ' + args.map(a => JSON.stringify(a)).join(' '));
+            updateConsoleOutput();
+        };
+
+        console.error = function(...args) {
+            originalError(...args);
+            logs.push('[ERROR] ' + args.map(a => JSON.stringify(a)).join(' '));
+            updateConsoleOutput();
+        };
+
+        console.warn = function(...args) {
+            originalWarn(...args);
+            logs.push('[WARN] ' + args.map(a => JSON.stringify(a)).join(' '));
+            updateConsoleOutput();
+        };
+
+        function updateConsoleOutput() {
+            const output = document.getElementById('consoleOutput');
+            output.textContent = logs.slice(-50).join('\n');
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function updateSystemStatus() {
+            const status = document.getElementById('systemStatus');
+            const token = localStorage.getItem('auth_token');
+            const isAuth = apiService.isAuthenticated();
+            const CONFIG = window.__CONFIG__ || {};
+
+            status.innerHTML = `
+                <p><strong>API Service:</strong> <span class="status-good">✓ Loaded</span></p>
+                <p><strong>Auth Token:</strong> ${token ? `<span class="status-good">✓ Found (${token.substring(0, 30)}...)</span>` : '<span class="status-bad">✗ Not found</span>'}</p>
+                <p><strong>Is Authenticated:</strong> ${isAuth ? '<span class="status-good">✓ Yes</span>' : '<span class="status-bad">✗ No</span>'}</p>
+                <p><strong>Current User:</strong> ${isAuth ? `<span class="status-info">${apiService.getCurrentUser()?.email || 'Unknown'}</span>` : '<span class="status-bad">Not logged in</span>'}</p>
+                <p><strong>Supabase URL:</strong> <code>${apiService.baseURL}</code></p>
+                <p><strong>API Key:</strong> <code>${apiService.apiKey ? apiService.apiKey.substring(0, 20) + '...' : 'Not configured'}</code></p>
+            `;
+        }
+
+        function updateStorageStatus() {
+            const status = document.getElementById('storageStatus');
+            const items = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                items.push(`<p><strong>${key}:</strong> <code>${value.substring(0, 50)}${value.length > 50 ? '...' : ''}</code></p>`);
+            }
+            status.innerHTML = items.length > 0 ? items.join('') : '<p class="status-bad">localStorage is empty</p>';
+        }
+
+        window.testRegster = async function() {
+            console.log('=== Starting Registration Test ===');
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const result = document.getElementById('regResult');
+
+            result.innerHTML = '<div class="alert alert-info">Testing registration...</div>';
+
+            try {
+                console.log('Calling apiService.register()');
+                const response = await apiService.register(email, password);
+                console.log('Registration response:', response);
+                
+                result.innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>✓ Registration Successful!</strong><br>
+                        <code>${JSON.stringify(response, null, 2)}</code>
+                    </div>
+                `;
+                updateSystemStatus();
+                updateStorageStatus();
+            } catch (error) {
+                console.error('Registration Error:', error);
+                result.innerHTML = `
+                    <div class="alert alert-danger">
+                        <strong>✗ Registration Failed</strong><br>
+                        <code>${error.message}</code>
+                    </div>
+                `;
+            }
+        };
+
+        window.testLogin = async function() {
+            console.log('=== Starting Login Test ===');
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const result = document.getElementById('loginResult');
+
+            result.innerHTML = '<div class="alert alert-info">Testing login...</div>';
+
+            try {
+                console.log('Calling apiService.login()');
+                const response = await apiService.login(email, password);
+                console.log('Login response:', response);
+                
+                result.innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>✓ Login Successful!</strong><br>
+                        <code>${JSON.stringify(response, null, 2)}</code>
+                    </div>
+                `;
+                updateSystemStatus();
+                updateStorageStatus();
+            } catch (error) {
+                console.error('Login Error:', error);
+                result.innerHTML = `
+                    <div class="alert alert-danger">
+                        <strong>✗ Login Failed</strong><br>
+                        <code>${error.message}</code>
+                    </div>
+                `;
+            }
+        };
+
+        window.testSupabaseConnection = async function() {
+            console.log('=== Testing Supabase Connection ===');
+            const result = document.getElementById('networkResult');
+            result.innerHTML = '<div class="alert alert-info">Testing connection...</div>';
+
+            try {
+                const response = await fetch(`${apiService.baseURL}/rest/v1/hobbies?limit=1`, {
+                    headers: {
+                        'apikey': apiService.apiKey,
+                    }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    result.innerHTML = `<div class="alert alert-success">✓ Supabase is reachable (${response.status})</div>`;
+                } else {
+                    result.innerHTML = `<div class="alert alert-danger">✗ Supabase error: ${data.message || response.statusText}</div>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="alert alert-danger">✗ Connection failed: ${error.message}</div>`;
+            }
+        };
+
+        window.clearStorage = function() {
+            localStorage.clear();
+            alert('All storage cleared!');
+            updateSystemStatus();
+            updateStorageStatus();
+        };
+
+        window.clearConsole = function() {
+            logs.length = 0;
+            updateConsoleOutput();
+        };
+
+        // Initial update
+        updateSystemStatus();
+        updateStorageStatus();
+        updateConsoleOutput();
+
+        console.log('Auth Diagnostics Dashboard loaded');
+    </script>
+</body>
+</html>

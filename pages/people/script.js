@@ -2,6 +2,8 @@
  * People Page JavaScript
  */
 
+import { Header } from '../../src/components/header.js';
+
 // Sample people data
 const peopleData = [
     {
@@ -156,6 +158,10 @@ let filteredPeople = [];
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize header with authentication support
+    const header = new Header();
+    header.render();
+    
     setActiveNav('Find People');
     filteredPeople = peopleData;
     renderPeople(filteredPeople);
