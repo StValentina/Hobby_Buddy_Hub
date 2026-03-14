@@ -1,0 +1,122 @@
+/**
+ * Create Event Page Styles
+ */
+
+.create-event-main {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding-top: 40px;
+    padding-bottom: 50px;
+}
+
+/* Form Styles */
+.card {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+.form-label {
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+.form-control,
+.form-select {
+    border: 1px solid #e0e6ed;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.form-control-lg,
+.form-select-lg {
+    padding: 12px 16px;
+    font-size: 16px;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* Form Buttons */
+.form-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    padding: 12px 24px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a4193 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:disabled {
+    background: linear-gradient(135deg, #999 0%, #888 100%);
+    transform: none;
+    cursor: not-allowed;
+}
+
+.btn-outline-secondary {
+    color: #667eea;
+    border-color: #667eea;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #f0f2ff;
+    border-color: #667eea;
+    color: #667eea;
+}
+
+/* Small text under inputs */
+small.text-muted {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .create-event-main {
+        padding-top: 20px;
+        padding-bottom: 30px;
+    }
+    
+    .card {
+        margin: 0 -12px;
+        border-radius: 0;
+    }
+    
+    .form-buttons {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}

@@ -17,6 +17,27 @@ function getViewedUserIdFromURL() {
     return params.get('viewUserId');
 }
 
+// Clear previous profile data from display
+function clearProfileDisplay() {
+    document.getElementById('displayName').textContent = '';
+    document.getElementById('displayEmail').textContent = '';
+    document.getElementById('displayCity').textContent = '';
+    document.getElementById('displayBio').textContent = '';
+    document.getElementById('hobbiesList').innerHTML = '<span class="text-muted">Loading hobbies...</span>';
+    document.getElementById('upcomingEventsList').innerHTML = '<p class="text-muted">Loading events...</p>';
+    document.getElementById('eventsJoinedCount').textContent = '0';
+    document.getElementById('hobbiesCount').textContent = '0';
+    document.getElementById('connectionsCount').textContent = '0';
+    
+    // Reset avatar to default
+    const avatarDisplay = document.getElementById('avatarDisplay');
+    if (avatarDisplay) {
+        avatarDisplay.innerHTML = '<i class="bi bi-person-fill"></i>';
+        avatarDisplay.style.backgroundImage = '';
+        avatarDisplay.style.background = 'linear-gradient(135deg, #667eea 0%, #667eea99 100%)';
+    }
+}
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', async () => {
     window.setActiveNav('Profile');
@@ -42,6 +63,9 @@ document.addEventListener('DOMContentLoaded', async () => {
  */
 async function loadUserProfile() {
     try {
+        // Clear previous profile data from display
+        clearProfileDisplay();
+        
         let userId;
         
         if (isViewingOtherProfile) {
@@ -139,12 +163,12 @@ function displayProfileInfo(profile) {
 function displayHobbies(hobbies) {
     const hobbiesList = document.getElementById('hobbiesList');
     if (!hobbies || hobbies.length === 0) {
-        hobbiesList.innerHTML = '<span class="text-muted">No hobbies selected yet.</span>';
+        hobbiesList.innerHTML = '<span class="text-muted cursor-pointer" onclick="showEditHobbiesForm()">No hobbies selected yet. Click to add hobbies.</span>';
         return;
     }
 
     hobbiesList.innerHTML = hobbies.map(hobby => 
-        `<span class="hobby-badge">${hobby}</span>`
+        `<span class="hobby-badge cursor-pointer" onclick="showEditHobbiesForm()" title="Click to edit hobbies">${hobby}</span>`
     ).join('');
 }
 
@@ -200,7 +224,6 @@ function setupEventListeners() {
     const cancelEditBtn = document.getElementById('cancelEditBtn');
     const deleteAccountBtn = document.getElementById('deleteAccountBtn');
     const changeAvatarBtn = document.getElementById('changeAvatarBtn');
-    const editHobbiesBtn = document.getElementById('editHobbiesBtn');
     const saveHobbiesBtn = document.getElementById('saveHobbiesBtn');
     const cancelHobbiesBtn = document.getElementById('cancelHobbiesBtn');
 
@@ -209,7 +232,6 @@ function setupEventListeners() {
         editProfileBtn.style.display = 'none';
         changeAvatarBtn.style.display = 'none';
         deleteAccountBtn.style.display = 'none';
-        editHobbiesBtn.style.display = 'none';
         const dangerZone = document.querySelector('.danger-zone');
         if (dangerZone) {
             dangerZone.style.display = 'none';
@@ -232,9 +254,6 @@ function setupEventListeners() {
     // Change avatar button
     changeAvatarBtn.addEventListener('click', handleChangeAvatar);
 
-    // Edit hobbies button
-    editHobbiesBtn.addEventListener('click', showEditHobbiesForm);
-
     // Save hobbies button
     saveHobbiesBtn.addEventListener('click', saveHobbiesChanges);
 
@@ -255,6 +274,9 @@ function showEditForm() {
     document.getElementById('inputName').value = userProfile.name;
     document.getElementById('inputCity').value = userProfile.city;
     document.getElementById('inputBio').value = userProfile.bio;
+
+    // Render hobbies checkboxes in the edit form
+    renderEditFormHobbiesCheckboxes();
 
     // Hide sections and show form
     if (aboutSection) aboutSection.style.display = 'none';
@@ -308,6 +330,36 @@ function hideEditHobbiesForm() {
 
     editHobbiesFormSection.style.display = 'none';
     hobbiesSection.style.display = 'block';
+}
+
+/**
+ * Render hobbies checkboxes for standalone edit form
+ */
+function renderEditFormHobbiesCheckboxes() {
+    const checkboxesContainer = document.getElementById('editHobbiesCheckboxes');
+    
+    if (!checkboxesContainer) return;
+    
+    if (!allHobbies || allHobbies.length === 0) {
+        checkboxesContainer.innerHTML = '<p class="text-muted">No hobbies available</p>';
+        return;
+    }
+
+    checkboxesContainer.innerHTML = allHobbies.map(hobby => `
+        <div class="form-check mb-3">
+            <input 
+                class="form-check-input hobby-checkbox" 
+                type="checkbox" 
+                id="hobby_edit_${hobby.id}" 
+                data-hobby-id="${hobby.id}"
+                ${selectedHobbyIds.includes(hobby.id) ? 'checked' : ''}
+            >
+            <label class="form-check-label" for="hobby_edit_${hobby.id}">
+                <strong>${hobby.name}</strong>
+                ${hobby.description ? `<p class="text-muted small mb-0">${hobby.description}</p>` : ''}
+            </label>
+        </div>
+    `).join('');
 }
 
 /**
@@ -387,23 +439,36 @@ async function saveProfileChanges() {
     }
 
     try {
-        // Prepare update data
+        // Prepare update data for profile
         const updateData = {
             full_name: newName,
             city: newCity || null,
             bio: newBio || null
         };
         
-        // Save to database
-        const result = await apiService.updateProfile(userProfile.id, updateData);
+        // Save profile to database
+        await apiService.updateProfile(userProfile.id, updateData);
+        
+        // Get selected hobbies from form
+        const checkedBoxes = document.querySelectorAll('#editHobbiesCheckboxes .hobby-checkbox:checked');
+        const newSelectedHobbyIds = Array.from(checkedBoxes).map(checkbox => checkbox.dataset.hobbyId);
+        
+        // Update hobbies if they changed
+        await apiService.updateUserHobbies(userProfile.id, newSelectedHobbyIds);
         
         // Update local profile object
         userProfile.name = newName;
         userProfile.city = newCity;
         userProfile.bio = newBio;
+        selectedHobbyIds = newSelectedHobbyIds;
+        const updatedHobbies = allHobbies.filter(h => newSelectedHobbyIds.includes(h.id));
+        userProfile.hobbies = updatedHobbies.map(h => h.name);
+        userProfile.hobbiesCount = updatedHobbies.length;
 
         // Update display
         displayProfileInfo(userProfile);
+        displayHobbies(userProfile.hobbies);
+        updateProfileStats(userProfile);
 
         // Show success message
         showSuccessMessage('✅ Profile updated successfully!');

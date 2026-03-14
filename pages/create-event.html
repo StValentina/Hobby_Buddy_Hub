@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Event - Hobby Buddy Hub</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="/public/css/global.css">
+    <!-- Components CSS -->
+    <link rel="stylesheet" href="/src/styles/components.css">
+    
+    <!-- Page CSS -->
+    <link rel="stylesheet" href="/src/styles/pages/create-event.css">
+</head>
+<body>
+    <!-- Header will be auto-loaded here -->
+    <header id="header-container"></header>
+
+    <main class="create-event-main">
+        <div class="container py-5">
+            <!-- Page Title -->
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h1 class="display-4 fw-bold text-dark mb-3">Create New Event</h1>
+                    <p class="lead text-muted">Organize a fun hobby activity and connect with interested people</p>
+                </div>
+            </div>
+
+            <!-- Create Event Form -->
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card border-0 shadow-lg">
+                        <div class="card-body p-4">
+                            <form id="createEventForm">
+                                <!-- Event Title -->
+                                <div class="mb-4">
+                                    <label for="eventTitle" class="form-label fw-bold">Event Title</label>
+                                    <input 
+                                        type="text" 
+                                        class="form-control form-control-lg" 
+                                        id="eventTitle" 
+                                        placeholder="e.g., Weekend Hiking Adventure"
+                                        required
+                                    >
+                                    <small class="text-muted">Give your event a catchy name</small>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="mb-4">
+                                    <label for="eventDescription" class="form-label fw-bold">Description</label>
+                                    <textarea 
+                                        class="form-control" 
+                                        id="eventDescription" 
+                                        rows="4"
+                                        placeholder="Describe your event, what participants should expect, what to bring, etc."
+                                        required
+                                    ></textarea>
+                                </div>
+
+                                <!-- Hobby/Category -->
+                                <div class="mb-4">
+                                    <label for="eventCategory" class="form-label fw-bold">Hobby Category</label>
+                                    <select 
+                                        class="form-select form-select-lg" 
+                                        id="eventCategory"
+                                        required
+                                    >
+                                        <option value="">Select a hobby category...</option>
+                                    </select>
+                                </div>
+
+                                <!-- Date -->
+                                <div class="mb-4">
+                                    <label for="eventDate" class="form-label fw-bold">Date</label>
+                                    <input 
+                                        type="date" 
+                                        class="form-control form-control-lg" 
+                                        id="eventDate"
+                                        required
+                                    >
+                                </div>
+
+                                <!-- Time -->
+                                <div class="mb-4">
+                                    <label for="eventTime" class="form-label fw-bold">Time</label>
+                                    <input 
+                                        type="time" 
+                                        class="form-control form-control-lg" 
+                                        id="eventTime"
+                                        required
+                                    >
+                                </div>
+
+                                <!-- Location -->
+                                <div class="mb-4">
+                                    <label for="eventLocation" class="form-label fw-bold">Location</label>
+                                    <input 
+                                        type="text" 
+                                        class="form-control form-control-lg" 
+                                        id="eventLocation" 
+                                        placeholder="e.g., Central Park, New York"
+                                        required
+                                    >
+                                </div>
+
+                                <!-- Participant Limit -->
+                                <div class="mb-4">
+                                    <label for="eventParticipantLimit" class="form-label fw-bold">Maximum Participants (Optional)</label>
+                                    <input 
+                                        type="number" 
+                                        class="form-control form-control-lg" 
+                                        id="eventParticipantLimit"
+                                        placeholder="Leave empty for unlimited"
+                                        min="1"
+                                    >
+                                </div>
+
+                                <!-- Tags -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Tags (Optional)</label>
+                                    <div id="tagsContainer" class="d-flex flex-wrap gap-2">
+                                        <p class="text-muted w-100">Loading tags...</p>
+                                    </div>
+                                </div>
+
+                                <!-- Form Buttons -->
+                                <div class="form-buttons mt-5">
+                                    <button type="submit" class="btn btn-lg btn-primary w-100 mb-3">
+                                        <i class="bi bi-plus-circle me-2"></i>Create Event
+                                    </button>
+                                    <a href="/pages/dashboard.html" class="btn btn-lg btn-outline-secondary w-100">
+                                        <i class="bi bi-x-circle me-2"></i>Cancel
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer will be auto-loaded here -->
+    <footer id="footer-container"></footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Global JS -->
+    <script type="module" src="/public/js/global.js"></script>
+    
+    <!-- Global Components Loader -->
+    <script type="module">
+        import ComponentsLoader from '/src/components/loader.js';
+    </script>
+    
+    <!-- Page JS -->
+    <script type="module" src="/src/pages/create-event.js"></script>
+</body>
+</html>

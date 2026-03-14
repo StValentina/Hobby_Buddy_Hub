@@ -38,7 +38,7 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <h6 class="text-muted text-uppercase small fw-bold">My Hobbies</h6>
-                                    <h2 class="fw-bold mb-0">5</h2>
+                                    <h2 class="fw-bold mb-0" id="dashboardHobbiesCount">0</h2>
                                 </div>
                                 <i class="bi bi-star-fill text-warning" style="font-size: 2rem;"></i>
                             </div>
@@ -47,12 +47,12 @@
                 </div>
 
                 <div class="col-md-3 col-sm-6">
-                    <div class="card border-0 shadow-sm h-100">
+                    <div class="card border-0 shadow-sm h-100 stat-card" id="eventsJoinedCard" style="cursor: pointer;" data-filter="joined">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <h6 class="text-muted text-uppercase small fw-bold">Events Joined</h6>
-                                    <h2 class="fw-bold mb-0">8</h2>
+                                    <h2 class="fw-bold mb-0" id="dashboardEventsJoinedCount">0</h2>
                                 </div>
                                 <i class="bi bi-calendar-check text-success" style="font-size: 2rem;"></i>
                             </div>
@@ -61,12 +61,12 @@
                 </div>
 
                 <div class="col-md-3 col-sm-6">
-                    <div class="card border-0 shadow-sm h-100">
+                    <div class="card border-0 shadow-sm h-100 stat-card" id="myEventsCard" style="cursor: pointer;" data-filter="hosting">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <h6 class="text-muted text-uppercase small fw-bold">My Events</h6>
-                                    <h2 class="fw-bold mb-0">3</h2>
+                                    <h2 class="fw-bold mb-0" id="dashboardMyEventsCount">0</h2>
                                 </div>
                                 <i class="bi bi-megaphone text-primary" style="font-size: 2rem;"></i>
                             </div>
@@ -80,7 +80,7 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <h6 class="text-muted text-uppercase small fw-bold">Connections</h6>
-                                    <h2 class="fw-bold mb-0">24</h2>
+                                    <h2 class="fw-bold mb-0" id="dashboardConnectionsCount">0</h2>
                                 </div>
                                 <i class="bi bi-people-fill text-info" style="font-size: 2rem;"></i>
                             </div>
@@ -99,62 +99,17 @@
                             </h5>
                         </div>
                         <div class="card-body">
-                            <div class="event-item pb-3 mb-3 border-bottom" id="event-1">
-                                <div class="row align-items-center">
-                                    <div class="col-md-6">
-                                        <h6 class="fw-bold mb-1">Photography Meetup</h6>
-                                        <p class="text-muted small mb-2">
-                                            <i class="bi bi-calendar me-1"></i>Mar 15, 2026 at 10:00 AM
-                                        </p>
-                                        <p class="text-muted small">
-                                            <i class="bi bi-geo-alt me-1"></i>Central Park, New York
-                                        </p>
-                                    </div>
-                                    <div class="col-md-6 text-md-end mt-2 mt-md-0">
-                                        <span class="badge bg-success me-2">Attending</span>
-                                        <a href="#" class="btn btn-sm btn-outline-primary">View Details</a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="event-item pb-3 mb-3 border-bottom">
-                                <div class="row align-items-center">
-                                    <div class="col-md-6">
-                                        <h6 class="fw-bold mb-1">Cooking Class - Italian Cuisine</h6>
-                                        <p class="text-muted small mb-2">
-                                            <i class="bi bi-calendar me-1"></i>Mar 18, 2026 at 6:00 PM
-                                        </p>
-                                        <p class="text-muted small">
-                                            <i class="bi bi-geo-alt me-1"></i>Kitchen Studio, Downtown
-                                        </p>
-                                    </div>
-                                    <div class="col-md-6 text-md-end mt-2 mt-md-0">
-                                        <span class="badge bg-success me-2">Attending</span>
-                                        <a href="#" class="btn btn-sm btn-outline-primary">View Details</a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="event-item pb-3">
-                                <div class="row align-items-center">
-                                    <div class="col-md-6">
-                                        <h6 class="fw-bold mb-1">Book Club Discussion</h6>
-                                        <p class="text-muted small mb-2">
-                                            <i class="bi bi-calendar me-1"></i>Mar 22, 2026 at 7:00 PM
-                                        </p>
-                                        <p class="text-muted small">
-                                            <i class="bi bi-geo-alt me-1"></i>Library, 5th Avenue
-                                        </p>
-                                    </div>
-                                    <div class="col-md-6 text-md-end mt-2 mt-md-0">
-                                        <span class="badge bg-warning text-dark me-2">Interested</span>
-                                        <a href="#" class="btn btn-sm btn-outline-primary">View Details</a>
-                                    </div>
-                                </div>
+                            <div class="events-list-container" id="upcomingEventsContainer" style="max-height: 600px; overflow-y: auto;">
+                                <p class="text-muted">Loading upcoming events...</p>
                             </div>
                         </div>
+                        <div class="card-footer bg-white border-top text-center" id="loadMoreContainer" style="display: none;">
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="loadMoreBtn">
+                                <i class="bi bi-arrow-down me-1"></i>Load More Events
+                            </button>
+                        </div>
                         <div class="card-footer bg-white border-top">
-                            <a href="#" class="btn btn-sm btn-outline-primary">
+                            <a href="/pages/events.html" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-arrow-right me-1"></i>View All Events
                             </a>
                         </div>
@@ -169,17 +124,17 @@
                         </div>
                         <div class="card-body">
                             <div class="d-grid gap-2">
-                                <a href="#" class="btn btn-primary btn-sm">
+                                <a href="/pages/create-event.html" class="btn btn-primary btn-sm">
                                     <i class="bi bi-plus-circle me-2"></i>Create Event
                                 </a>
-                                <a href="#" class="btn btn-outline-primary btn-sm">
+                                <a href="/pages/hobbies.html" class="btn btn-outline-primary btn-sm">
                                     <i class="bi bi-star me-2"></i>Browse Hobbies
                                 </a>
-                                <a href="#" class="btn btn-outline-primary btn-sm">
+                                <a href="/pages/people.html" class="btn btn-outline-primary btn-sm">
                                     <i class="bi bi-people me-2"></i>Find People
                                 </a>
-                                <a href="#" class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-person me-2"></i>Edit Profile
+                                <a href="/pages/profile.html" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-person me-2"></i>My Profile
                                 </a>
                             </div>
                         </div>
@@ -191,18 +146,9 @@
                             <h5 class="mb-0 fw-bold">My Hobbies</h5>
                         </div>
                         <div class="card-body">
-                            <div class="d-flex flex-wrap gap-2">
-                                <span class="badge bg-primary">Photography</span>
-                                <span class="badge bg-success">Cooking</span>
-                                <span class="badge bg-warning text-dark">Reading</span>
-                                <span class="badge bg-info">Hiking</span>
-                                <span class="badge bg-danger">Painting</span>
+                            <div id="dashboardHobbiesContainer" class="d-flex flex-wrap gap-2">
+                                <p class="text-muted">Loading hobbies...</p>
                             </div>
-                        </div>
-                        <div class="card-footer bg-white border-top">
-                            <a href="#" class="btn btn-sm btn-outline-primary w-100">
-                                <i class="bi bi-pencil me-1"></i>Manage Hobbies
-                            </a>
                         </div>
                     </div>
                 </div>

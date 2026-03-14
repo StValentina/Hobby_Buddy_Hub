@@ -155,13 +155,6 @@ export class Header {
                   <i class="bi bi-people me-1"></i>Find People
                 </a>
               </li>
-              ${isAuthenticated ? `
-              <li class="nav-item">
-                <a class="nav-link" href="/pages/dashboard.html">
-                  <i class="bi bi-speedometer2 me-1"></i>Dashboard
-                </a>
-              </li>
-              ` : ''}
               ${authHtml}
             </ul>
           </div>

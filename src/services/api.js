@@ -12,6 +12,27 @@ class APIService {
   }
 
   /**
+   * Decode JWT payload safely
+   */
+  getTokenPayload() {
+    if (!this.authToken) {
+      return null;
+    }
+
+    try {
+      const parts = this.authToken.split('.');
+      if (parts.length !== 3) {
+        return null;
+      }
+
+      return JSON.parse(atob(parts[1]));
+    } catch (error) {
+      console.error('Failed to decode auth token payload:', error);
+      return null;
+    }
+  }
+
+  /**
    * Get stored authentication token
    */
   getAuthToken() {
@@ -79,6 +100,11 @@ class APIService {
         } catch {
           // Keep fallback status text when response body is not JSON.
         }
+        if (response.status === 401) {
+          this.clearAuthToken();
+          throw new Error('Your session has expired. Please log in again.');
+        }
+
         throw new Error(errorMessage);
       }
 
@@ -158,38 +184,17 @@ class APIService {
     try {
       console.log('Fetching hobbies from Supabase...');
       
-      // Fetch all hobbies and all hobby-tag relationships in parallel
-      const [hobbiesResponse, allHobbyTags] = await Promise.all([
-        this.get('/hobbies?select=id,name,description,image_url'),
-        this.get('/hobby_tags?select=hobby_id,tags(id,name)')
-      ]);
+      // Fetch all hobbies (simplified - no tags for dropdown)
+      const hobbiesResponse = await this.get('/hobbies?select=id,name,description,image_url');
       
       console.log('Hobbies fetched:', hobbiesResponse);
-      console.log('Hobby tags fetched:', allHobbyTags);
       
       if (!hobbiesResponse || hobbiesResponse.length === 0) {
         console.warn('No hobbies found in database');
         return [];
       }
       
-      // Group tags by hobby_id
-      const tagsByHobbyId = {};
-      allHobbyTags.forEach(ht => {
-        if (!tagsByHobbyId[ht.hobby_id]) {
-          tagsByHobbyId[ht.hobby_id] = [];
-        }
-        if (ht.tags?.name) {
-          tagsByHobbyId[ht.hobby_id].push(ht.tags.name);
-        }
-      });
-      
-      // Add tags to hobbies
-      const hobbiesWithTags = hobbiesResponse.map(hobby => ({
-        ...hobby,
-        tags: tagsByHobbyId[hobby.id] || []
-      }));
-      
-      return hobbiesWithTags;
+      return hobbiesResponse;
     } catch (error) {
       console.error('Failed to fetch hobbies:', error);
       throw error;
@@ -253,14 +258,79 @@ class APIService {
   }
 
   /**
+   * Get all tags
+   */
+  async getTags() {
+    try {
+      console.log('Fetching tags from Supabase...');
+      const tags = await this.get('/tags?select=id,name');
+      console.log('Tags fetched:', tags);
+      return tags || [];
+    } catch (error) {
+      console.error('Failed to fetch tags:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get tags for a specific event
+   */
+  async getEventTags(eventId) {
+    try {
+      console.log(`Fetching tags for event ${eventId}...`);
+      const eventTags = await this.get(`/event_tags?event_id=eq.${eventId}&select=tags(id,name)`);
+      
+      if (!eventTags || eventTags.length === 0) {
+        console.log(`No tags found for event ${eventId}`);
+        return [];
+      }
+      
+      // Extract tag objects from response
+      const tags = eventTags.map(et => et.tags).filter(t => t);
+      console.log('Event tags fetched:', tags);
+      return tags;
+    } catch (error) {
+      console.error(`Failed to fetch tags for event ${eventId}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Add tags to an event
+   */
+  async addTagsToEvent(eventId, tagIds) {
+    try {
+      if (!Array.isArray(tagIds) || tagIds.length === 0) {
+        console.log('No tags to add');
+        return [];
+      }
+
+      console.log(`Adding tags to event ${eventId}:`, tagIds);
+      
+      // Create event_tag records for each selected tag
+      const tagRecords = tagIds.map(tagId => ({
+        event_id: eventId,
+        tag_id: tagId
+      }));
+      
+      const result = await this.post('/event_tags', tagRecords);
+      console.log('Tags added to event:', result);
+      return result;
+    } catch (error) {
+      console.error('Failed to add tags to event:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get all events with related hobby and location information
    */
   async getEvents() {
     try {
       console.log('Fetching events from Supabase...');
       
-      // Fetch events with hobby and location details
-      const events = await this.get('/events?select=id,title,description,event_date,hobbies(name),locations(city,address)');
+      // Fetch events with hobby, location details, and participant counts
+      const events = await this.get('/events?select=id,title,description,event_date,max_participants,hobbies(name),locations(city,address),event_participants(profile_id)');
       console.log('Events fetched:', events);
       
       if (!events || events.length === 0) {
@@ -269,16 +339,24 @@ class APIService {
       }
       
       // Format events for display
-      const formattedEvents = events.map(event => ({
-        id: event.id,
-        title: event.title,
-        description: event.description,
-        category: event.hobbies?.name || 'Unknown',
-        location: event.locations?.city || 'TBD',
-        date: new Date(event.event_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-        time: new Date(event.event_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        participants: 0
-      }));
+      const formattedEvents = events.map(event => {
+        const currentParticipants = event.event_participants ? event.event_participants.length : 0;
+        const maxParticipants = event.max_participants || 0;
+        const availableSpots = maxParticipants > 0 ? maxParticipants - currentParticipants : 0;
+        
+        return {
+          id: event.id,
+          title: event.title,
+          description: event.description,
+          category: event.hobbies?.name || 'Unknown',
+          location: event.locations?.city || 'TBD',
+          date: new Date(event.event_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+          time: new Date(event.event_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          currentParticipants: currentParticipants,
+          maxParticipants: maxParticipants,
+          availableSpots: availableSpots
+        };
+      });
       
       return formattedEvents;
     } catch (error) {
@@ -402,6 +480,19 @@ class APIService {
       this.clearAuthToken();
       return false;
     }
+
+    const payload = this.getTokenPayload();
+    if (!payload) {
+      console.warn('isAuthenticated() - INVALID TOKEN PAYLOAD, clearing...');
+      this.clearAuthToken();
+      return false;
+    }
+
+    if (payload.exp && Date.now() >= payload.exp * 1000) {
+      console.warn('isAuthenticated() - TOKEN EXPIRED, clearing...');
+      this.clearAuthToken();
+      return false;
+    }
     
     return true;
   }
@@ -410,18 +501,16 @@ class APIService {
    * Get current user from token (basic info)
    */
   getCurrentUser() {
-    if (!this.authToken) {
+    if (!this.authToken || !this.isAuthenticated()) {
       return null;
     }
     
     try {
-      // Decode JWT token manually (basic parsing without verification)
-      const parts = this.authToken.split('.');
-      if (parts.length !== 3) {
+      const decoded = this.getTokenPayload();
+      if (!decoded) {
         return null;
       }
-      
-      const decoded = JSON.parse(atob(parts[1]));
+
       return {
         id: decoded.sub,
         email: decoded.email,
@@ -561,6 +650,49 @@ class APIService {
   }
 
   /**
+   * Get events hosted by user
+   */
+  async getEventsHostedByUser(userId) {
+    try {
+      console.log(`Fetching events hosted by user ${userId}...`);
+      
+      const hostedEvents = await this.get(
+        `/events?host_id=eq.${encodeURIComponent(userId)}&select=id,title,description,event_date,max_participants,hobbies(name),locations(city,address),event_participants(profile_id)`
+      );
+      
+      if (!hostedEvents || hostedEvents.length === 0) {
+        console.warn(`No events hosted by user ${userId}`);
+        return [];
+      }
+      
+      // Format hosted events
+      const formattedEvents = hostedEvents.map(event => {
+        const eventDate = new Date(event.event_date);
+        const currentParticipants = event.event_participants ? event.event_participants.length : 0;
+        
+        return {
+          id: event.id,
+          title: event.title,
+          description: event.description,
+          category: event.hobbies?.name || 'Unknown',
+          location: event.locations?.city || 'TBD',
+          date: eventDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+          time: eventDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          maxParticipants: event.max_participants || 0,
+          currentParticipants: currentParticipants,
+          availableSpots: event.max_participants ? event.max_participants - currentParticipants : 0
+        };
+      });
+      
+      console.log('Events hosted by user fetched:', formattedEvents.length);
+      return formattedEvents;
+    } catch (error) {
+      console.error(`Failed to fetch events hosted by user ${userId}:`, error);
+      return [];
+    }
+  }
+
+  /**
    * Add hobby to user's profile
    */
   async addUserHobby(userId, hobbyId) {
@@ -581,6 +713,139 @@ class APIService {
         return null;
       }
       console.error(`Failed to add hobby ${hobbyId} for user ${userId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Join a hobby for the current user
+   */
+  async joinHobby(userId, hobbyId) {
+    try {
+      const result = await this.post('/user_hobbies', {
+        profile_id: userId,
+        hobby_id: hobbyId
+      }, {
+        headers: {
+          'Prefer': 'return=representation'
+        }
+      });
+
+      return {
+        success: true,
+        alreadyJoined: false,
+        data: Array.isArray(result) ? result[0] : result
+      };
+    } catch (error) {
+      const msg = String(error?.message || '').toLowerCase();
+      if (msg.includes('duplicate') || msg.includes('unique')) {
+        return { success: true, alreadyJoined: true };
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Join an event for the current user
+   */
+  async joinEvent(userId, eventId) {
+    try {
+      const existing = await this.get(
+        `/event_participants?profile_id=eq.${encodeURIComponent(userId)}&event_id=eq.${encodeURIComponent(eventId)}&select=id,status&limit=1`
+      );
+
+      if (Array.isArray(existing) && existing.length > 0) {
+        const participant = existing[0];
+        if (participant.status === 'joined') {
+          return { success: true, alreadyJoined: true, data: participant };
+        }
+
+        const updated = await this.patch(
+          `/event_participants?id=eq.${encodeURIComponent(participant.id)}`,
+          { status: 'joined' },
+          { headers: { 'Prefer': 'return=representation' } }
+        );
+
+        return {
+          success: true,
+          alreadyJoined: false,
+          data: Array.isArray(updated) ? updated[0] : updated
+        };
+      }
+
+      const result = await this.post('/event_participants', {
+        profile_id: userId,
+        event_id: eventId,
+        status: 'joined'
+      }, {
+        headers: {
+          'Prefer': 'return=representation'
+        }
+      });
+
+      return {
+        success: true,
+        alreadyJoined: false,
+        data: Array.isArray(result) ? result[0] : result
+      };
+    } catch (error) {
+      const msg = String(error?.message || '').toLowerCase();
+      if (msg.includes('duplicate') || msg.includes('unique')) {
+        return { success: true, alreadyJoined: true };
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Mark an event as interested (stored as pending status)
+   */
+  async markEventInterested(userId, eventId) {
+    try {
+      const existing = await this.get(
+        `/event_participants?profile_id=eq.${encodeURIComponent(userId)}&event_id=eq.${encodeURIComponent(eventId)}&select=id,status&limit=1`
+      );
+
+      if (Array.isArray(existing) && existing.length > 0) {
+        const participant = existing[0];
+        if (participant.status === 'pending') {
+          return { success: true, alreadyInterested: true, data: participant };
+        }
+        if (participant.status === 'joined') {
+          return { success: true, alreadyJoined: true, data: participant };
+        }
+
+        const updated = await this.patch(
+          `/event_participants?id=eq.${encodeURIComponent(participant.id)}`,
+          { status: 'pending' },
+          { headers: { 'Prefer': 'return=representation' } }
+        );
+
+        return {
+          success: true,
+          alreadyInterested: false,
+          data: Array.isArray(updated) ? updated[0] : updated
+        };
+      }
+
+      const created = await this.post('/event_participants', {
+        profile_id: userId,
+        event_id: eventId,
+        status: 'pending'
+      }, {
+        headers: { 'Prefer': 'return=representation' }
+      });
+
+      return {
+        success: true,
+        alreadyInterested: false,
+        data: Array.isArray(created) ? created[0] : created
+      };
+    } catch (error) {
+      const msg = String(error?.message || '').toLowerCase();
+      if (msg.includes('duplicate') || msg.includes('unique')) {
+        return { success: true, alreadyInterested: true };
+      }
       throw error;
     }
   }
@@ -790,52 +1055,81 @@ class APIService {
   }
 
   /**
-   * Get upcoming events that user has joined
+   * Get upcoming events where user is joined or interested (pending)
    */
   async getUpcomingEvents(userId) {
     try {
       console.log(`Fetching upcoming events for user ${userId}...`);
       
-      // Get events user has joined, ordered by date
-      const upcomingEvents = await this.get(
-        `/event_participants?profile_id=eq.${encodeURIComponent(userId)}&select=events(id,title,description,event_date,hobbies(name),locations(city,address))&order=events.event_date.asc`
-      );
+      if (!userId) {
+        console.warn('No user ID provided to getUpcomingEvents');
+        return [];
+      }
       
-      if (!upcomingEvents || upcomingEvents.length === 0) {
+      const participantRows = await this.get(
+        `/event_participants?profile_id=eq.${encodeURIComponent(userId)}&status=in.(joined,pending)&select=status,events(id,title,description,event_date,hobbies(name),locations(city,address))`
+      ).catch(err => {
+        console.warn('Failed to fetch participant events:', err);
+        return [];
+      });
+
+      const participantEvents = (Array.isArray(participantRows) ? participantRows : [])
+        .filter(row => row && row.events)
+        .map(row => ({
+          ...row.events,
+          participationStatus: row.status
+        }))
+        .filter(Boolean);
+
+      if (!participantEvents || participantEvents.length === 0) {
         console.warn(`No events found for user ${userId}`);
         return [];
       }
       
-      console.log('User events fetched:', upcomingEvents);
+      console.log('User participant events fetched:', participantEvents);
       
-      // Filter and format events
-      const now = new Date();
-      const formattedEvents = upcomingEvents
-        .map(item => {
-          if (!item.events) return null;
-          return {
-            id: item.events.id,
-            title: item.events.title,
-            description: item.events.description,
-            category: item.events.hobbies?.name || 'Unknown',
-            location: item.events.locations?.city || 'TBD',
-            date: new Date(item.events.event_date).toLocaleDateString('en-US', { 
-              year: 'numeric', 
-              month: 'short', 
-              day: 'numeric' 
-            }),
-            time: new Date(item.events.event_date).toLocaleTimeString('en-US', { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            }),
-            eventDate: new Date(item.events.event_date)
-          };
+      // Format events, deduplicate by event ID
+      const seenIds = new Set();
+      const formattedEvents = participantEvents
+        .map(eventData => {
+          try {
+            if (!eventData || !eventData.id) return null;
+            
+            // Skip if we've already seen this event (deduplication)
+            if (seenIds.has(eventData.id)) return null;
+            seenIds.add(eventData.id);
+            
+            const eventDate = new Date(eventData.event_date);
+            
+            return {
+              id: eventData.id,
+              title: eventData.title || 'Untitled Event',
+              description: eventData.description || '',
+              category: eventData.hobbies?.name || 'Unknown',
+              location: eventData.locations?.city || 'TBD',
+              date: eventDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+              }),
+              time: eventDate.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              }),
+              status: eventData.participationStatus || 'joined',
+              eventDate: eventDate
+            };
+          } catch (mapErr) {
+            console.warn('Error mapping event:', eventData, mapErr);
+            return null;
+          }
         })
-        .filter(event => event && event.eventDate > now) // Only future events
-        .sort((a, b) => a.eventDate - b.eventDate) // Sort by date
-        .slice(0, 5) // Limit to 5 upcoming events
+        .filter(event => event) // Filter out nulls
+        .sort((a, b) => a.eventDate - b.eventDate) // Sort by date (earliest first)
+        .slice(0, 10) // Limit to 10 events
         .map(({ eventDate, ...event }) => event); // Remove helper eventDate field
       
+      console.log('Formatted events:', formattedEvents.length);
       return formattedEvents;
     } catch (error) {
       console.error(`Failed to fetch upcoming events for user ${userId}:`, error);
@@ -887,7 +1181,7 @@ class APIService {
       console.log(`Fetching event ${eventId}...`);
       
       const events = await this.get(
-        `/events?id=eq.${encodeURIComponent(eventId)}&select=id,title,description,event_date,hobbies(id,name),locations(id,city,address),profiles(id,full_name),event_participants(profile_id,profiles(full_name))`
+        `/events?id=eq.${encodeURIComponent(eventId)}&select=id,title,description,event_date,max_participants,hobbies(id,name),locations(id,city,address),profiles(id,full_name),event_participants(profile_id,profiles(full_name))`
       );
       
       if (!events || events.length === 0) {
@@ -899,7 +1193,7 @@ class APIService {
       console.log('Event fetched:', event);
       
       const eventDate = new Date(event.event_date);
-      const maxParticipants = 20; // Default value
+      const maxParticipants = event.max_participants || 0;
       const currentParticipants = event.event_participants ? event.event_participants.length : 0;
       
       return {
@@ -913,13 +1207,115 @@ class APIService {
         host: event.profiles?.full_name || 'Unknown',
         maxParticipants: maxParticipants,
         currentParticipants: currentParticipants,
-        difficulty: 'Beginner',
-        price: 'Free',
         participants: event.event_participants ? event.event_participants.map(ep => ep.profiles?.full_name || 'Unknown') : []
       };
     } catch (error) {
       console.error(`Failed to fetch event ${eventId}:`, error);
       return null;
+    }
+  }
+
+  /**
+   * Get or find a location from existing locations
+   */
+  async getOrFindLocation(locationName) {
+    try {
+      // Get all locations
+      const locations = await this.get('/locations?select=id,name,city,address');
+      
+      if (!locations || locations.length === 0) {
+        // If no locations exist, throw an error
+        throw new Error('No locations available in the system. Please contact an admin to add locations.');
+      }
+      
+      // Try to find a location by name (case-insensitive)
+      let matchedLocation = locations.find(loc => 
+        loc.name.toLowerCase() === (locationName || '').toLowerCase()
+      );
+      
+      // If no exact match, try to find by city
+      if (!matchedLocation && locationName) {
+        matchedLocation = locations.find(loc => 
+          loc.city.toLowerCase() === locationName.toLowerCase() ||
+          loc.address.toLowerCase().includes(locationName.toLowerCase())
+        );
+      }
+      
+      // If still no match, use the first location as default
+      if (!matchedLocation) {
+        console.warn(`Location "${locationName}" not found. Using default location: ${locations[0].name}`);
+        matchedLocation = locations[0];
+      }
+      
+      console.log('Using location:', matchedLocation);
+      return matchedLocation;
+    } catch (error) {
+      console.error('Failed to find location:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new event
+   */
+  async createEvent(eventData) {
+    try {
+      const { 
+        title, 
+        description, 
+        category, 
+        date, 
+        time, 
+        location, 
+        hobby_id,
+        host_id,
+        max_participants
+      } = eventData;
+      
+      console.log('Creating event:', eventData);
+      
+      // Get or find location from existing locations
+      const locationObj = await this.getOrFindLocation(location);
+      if (!locationObj || !locationObj.id) {
+        throw new Error('Failed to find location');
+      }
+      
+      console.log('Using location:', locationObj.id);
+      
+      // Combine date and time
+      const eventDateTime = `${date}T${time}:00`;
+      
+      // Ensure max_participants is valid (must be > 0)
+      const finalMaxParticipants = (max_participants && parseInt(max_participants) > 0) ? parseInt(max_participants) : 50;
+      
+      const payload = {
+        title,
+        description,
+        event_date: eventDateTime,
+        hobby_id,
+        host_id: host_id,
+        location_id: locationObj.id,
+        max_participants: finalMaxParticipants
+      };
+
+      const response = await this.post('/events', payload, {
+        headers: {
+          'Prefer': 'return=representation'
+        }
+      });
+
+      // Supabase can return a single object or an array depending on client path.
+      const createdEvent = Array.isArray(response) ? response[0] : response;
+
+      if (!createdEvent || !createdEvent.id) {
+        throw new Error('Event was submitted but no created record was returned by Supabase.');
+      }
+      
+      console.log('Event created:', createdEvent);
+      return createdEvent;
+    } catch (error) {
+      console.error('Failed to create event:', error);
+      throw error;
     }
   }
 }

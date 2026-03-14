@@ -26,6 +26,7 @@ export default defineConfig({
         eventDetails: resolve(__dirname, 'pages/event-details.html'),
         profile: resolve(__dirname, 'pages/profile.html'),
         people: resolve(__dirname, 'pages/people.html'),
+        createEvent: resolve(__dirname, 'pages/create-event.html'),
         login: resolve(__dirname, 'pages/auth/login.html'),
         register: resolve(__dirname, 'pages/auth/register.html'),
         diagnostics: resolve(__dirname, 'pages/auth/diagnostics.html'),

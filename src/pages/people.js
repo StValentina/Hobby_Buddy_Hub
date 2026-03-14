@@ -23,6 +23,13 @@ let filteredPeople = [];
 // Initialize page
 document.addEventListener('DOMContentLoaded', async () => {
     window.setActiveNav('Find People');
+
+    // People directory is available only to authenticated users.
+    if (!apiService.isAuthenticated()) {
+        window.location.href = '/pages/auth/login.html';
+        return;
+    }
+
     await loadPeople();
     setupEventListeners();
 });

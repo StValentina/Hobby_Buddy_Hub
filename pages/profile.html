@@ -98,11 +98,8 @@
 
                     <!-- My Hobbies Section -->
                     <div class="section-card" id="hobbiesSection">
-                        <div class="section-header d-flex justify-content-between align-items-center">
+                        <div class="section-header">
                             <h3 class="section-title mb-0">My Hobbies</h3>
-                            <button class="btn btn-sm btn-outline-primary" id="editHobbiesBtn">
-                                <i class="bi bi-pencil me-1"></i>Edit
-                            </button>
                         </div>
                         <div class="section-content">
                             <div class="hobbies-tags" id="hobbiesList">
@@ -114,12 +111,11 @@
                     <!-- Edit Hobbies Form (Hidden by default) -->
                     <div class="section-card" id="editHobbiesFormSection" style="display: none;">
                         <div class="section-header">
-                            <h3 class="section-title">Edit My Hobbies</h3>
+                            <h3 class="section-title">Select Your Hobbies</h3>
                         </div>
                         <form id="editHobbiesForm" class="section-content">
                             <div class="mb-4">
-                                <label class="form-label fw-bold">Select your hobbies:</label>
-                                <p class="text-muted small">Check all hobbies that interest you</p>
+                                <p class="text-muted small">Click on hobbies to select or deselect them</p>
                                 <div id="hobbiesCheckboxes" class="hobbies-checklist">
                                     <!-- Checkboxes will be populated by JavaScript -->
                                 </div>
@@ -169,6 +165,14 @@
                             <div class="mb-4">
                                 <label for="inputBio" class="form-label fw-bold">Bio</label>
                                 <textarea class="form-control" id="inputBio" rows="4" placeholder="Tell us about yourself..."></textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Your Hobbies</label>
+                                <p class="text-muted small mb-3">Select the hobbies you're interested in</p>
+                                <div id="editHobbiesCheckboxes" class="hobbies-checklist">
+                                    <!-- Checkboxes will be populated by JavaScript -->
+                                </div>
                             </div>
 
                             <div class="form-buttons">

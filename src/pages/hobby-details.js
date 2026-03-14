@@ -327,8 +327,29 @@ function setupJoinButton(hobby) {
     const joinBtn = document.getElementById('joinHobbyBtn');
     if (!joinBtn) return;
     
-    joinBtn.addEventListener('click', () => {
-        alert(`✅ Great! You've joined the ${hobby.name} hobby community!`);
+    joinBtn.addEventListener('click', async () => {
+        if (!apiService.isAuthenticated()) {
+            window.location.href = '/pages/auth/login.html';
+            return;
+        }
+
+        const currentUser = apiService.getCurrentUser();
+        if (!currentUser?.id) {
+            window.location.href = '/pages/auth/login.html';
+            return;
+        }
+
+        try {
+            const joinResult = await apiService.joinHobby(currentUser.id, hobby.id);
+            if (joinResult.alreadyJoined) {
+                alert(`ℹ️ You are already part of the ${hobby.name} hobby community.`);
+                return;
+            }
+            alert(`✅ Great! You've joined the ${hobby.name} hobby community!`);
+        } catch (error) {
+            console.error('Failed to join hobby:', error);
+            alert(`❌ Failed to join hobby: ${error.message || 'Unknown error'}`);
+        }
     });
 }
 

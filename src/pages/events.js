@@ -137,7 +137,7 @@ function renderEvents(events) {
                         <div class="event-detail">
                             <i class="bi bi-people"></i>
                             <p class="event-detail-text event-capacity">
-                                <span>${event.participants} attending</span>
+                                <span>${event.availableSpots} of ${event.maxParticipants} spots available</span>
                             </p>
                         </div>
                     </div>
