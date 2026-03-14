@@ -174,16 +174,15 @@ function renderPeople(people) {
 
         // Determine avatar display
         const avatarContent = person.avatar_url 
-            ? `<img src="${person.avatar_url}" alt="${person.name}" class="person-avatar-image" style="width: 100%; height: 100%; object-fit: cover;">`
+            ? `<img src="${person.avatar_url}" alt="${person.name}" class="person-avatar-image">`
             : `<span class="person-avatar-icon"><i class="bi bi-person-fill"></i></span>`;
-        const avatarStyle = person.avatar_url ? '' : `style="background: ${gradient};"`;
+        const avatarStyle = `style="background: ${gradient};"`;
 
         return `
             <div class="col-lg-4 col-md-6">
                 <div class="person-card">
                     <div class="person-card-avatar" ${avatarStyle}>
                         ${avatarContent}
-                        <span class="role-badge">${person.role === 'host' ? '🎯 Host' : '🔍 Seeker'}</span>
                     </div>
                     <div class="person-card-body">
                         <h5 class="person-name">${person.name}</h5>
@@ -195,9 +194,6 @@ function renderPeople(people) {
                             <i class="bi bi-star-fill me-1"></i>${sharedHobby}
                         </div>
                         <p class="person-bio">${person.bio}</p>
-                        <div class="person-hobbies">
-                            ${person.hobbies.map(hobby => `<span class="hobby-tag">${hobby}</span>`).join('')}
-                        </div>
                     </div>
                     <div class="person-card-footer">
                         <a href="/pages/profile.html?viewUserId=${person.id}" class="btn btn-view-profile">

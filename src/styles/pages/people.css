@@ -107,6 +107,15 @@
     z-index: 1;
 }
 
+.person-avatar-image {
+    position: relative;
+    z-index: 1;
+    width: 140px !important;
+    height: 140px !important;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
 .role-badge {
     position: absolute;
     top: 8px;
