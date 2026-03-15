@@ -117,9 +117,9 @@ form.addEventListener('submit', async (e) => {
         
         showAlert('Login successful! Redirecting...', 'success');
         
-        // Redirect to home page after 1.5 seconds
+        // Redirect to dashboard after login to verify authenticated state immediately.
         setTimeout(() => {
-            window.location.href = '/';
+            window.location.replace('/dashboard');
         }, 1500);
         
     } catch (error) {
@@ -154,10 +154,10 @@ function checkExistingSession() {
         apiService.authToken = token;
         
         if (apiService.isAuthenticated()) {
-            console.log('Valid token found, user is already authenticated. Redirecting to home...');
-            // User is already logged in, redirect to home
+            console.log('Valid token found, user is already authenticated. Redirecting to dashboard...');
+            // User is already logged in, redirect to dashboard
             setTimeout(() => {
-                window.location.href = '/';
+                window.location.replace('/dashboard');
             }, 300);
         } else {
             console.log('Token is invalid, clearing and showing login form');
@@ -170,5 +170,3 @@ function checkExistingSession() {
     }
 }
 
-// Check existing session on page load
-checkExistingSession();

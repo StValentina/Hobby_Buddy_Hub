@@ -14,6 +14,24 @@ class APIService {
       console.error('Supabase configuration is missing. Check VITE_SUPABASE_URL and VITE_SUPABASE_KEY/VITE_SUPABASE_ANON_KEY.');
     }
   }
+
+  /**
+   * Decode base64url JWT segment safely (supports '-' and '_' plus padding).
+   */
+  decodeJwtSegment(segment) {
+    if (!segment || typeof segment !== 'string') {
+      return null;
+    }
+
+    try {
+      const base64 = segment.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+      return atob(padded);
+    } catch (error) {
+      console.error('Failed to decode JWT segment:', error);
+      return null;
+    }
+  }
   
   ensureConfigured() {
     if (!this.baseURL || !this.apiKey) {
@@ -35,7 +53,12 @@ class APIService {
         return null;
       }
 
-      return JSON.parse(atob(parts[1]));
+      const payloadJson = this.decodeJwtSegment(parts[1]);
+      if (!payloadJson) {
+        return null;
+      }
+
+      return JSON.parse(payloadJson);
     } catch (error) {
       console.error('Failed to decode auth token payload:', error);
       return null;
