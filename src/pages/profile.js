@@ -4,15 +4,6 @@
 
 import { apiService } from '/src/services/api.js';
 
-// Global function to show settings modal (can be called from header)
-window.showSettingsModal = function(event) {
-    event.preventDefault();
-    const modal = document.getElementById('settingsModal');
-    if (modal && window.settingsModal) {
-        window.settingsModal.show();
-    }
-};
-
 // User profile data loaded from database
 let userProfile = null;
 let allHobbies = []; // All available hobbies
@@ -63,6 +54,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.settingsModal = new bootstrap.Modal(settingsModalElement);
     }
     
+    // Check if should open settings modal
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldOpenSettings = urlParams.get('settings') === 'open';
+    
     // Check if viewing another user's profile
     viewedUserId = getViewedUserIdFromURL();
     if (viewedUserId) {
@@ -71,6 +66,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     await loadUserProfile();
     setupEventListeners();
+    
+    // Auto-open settings modal if requested
+    if (shouldOpenSettings && window.settingsModal) {
+        window.settingsModal.show();
+    }
 });
 
 /**
@@ -237,7 +237,8 @@ function setupEventListeners() {
     const editProfileBtn = document.getElementById('editProfileBtn');
     const saveChangesBtn = document.getElementById('saveChangesBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
-    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const deleteConfirmInput = document.getElementById('deleteConfirmInput');
     const changeAvatarBtn = document.getElementById('changeAvatarBtn');
     const saveHobbiesBtn = document.getElementById('saveHobbiesBtn');
     const cancelHobbiesBtn = document.getElementById('cancelHobbiesBtn');
@@ -246,7 +247,8 @@ function setupEventListeners() {
     if (isViewingOtherProfile) {
         editProfileBtn.style.display = 'none';
         changeAvatarBtn.style.display = 'none';
-        deleteAccountBtn.style.display = 'none';
+        const settingsBtn = document.getElementById('settingsBtn');
+        if (settingsBtn) settingsBtn.style.display = 'none';
         const dangerZone = document.querySelector('.danger-zone');
         if (dangerZone) {
             dangerZone.style.display = 'none';
@@ -263,8 +265,21 @@ function setupEventListeners() {
     // Cancel button
     cancelEditBtn.addEventListener('click', hideEditForm);
 
-    // Delete account button
-    deleteAccountBtn.addEventListener('click', confirmDeleteAccount);
+    // Confirm delete account button with validation
+    confirmDeleteBtn.addEventListener('click', () => {
+        const inputValue = deleteConfirmInput.value.trim();
+        if (inputValue === 'DELETE') {
+            deleteAccount();
+        } else {
+            deleteConfirmInput.classList.add('is-invalid');
+            showErrorMessage('Please type "DELETE" to confirm');
+        }
+    });
+
+    // Clear error styling when user types
+    deleteConfirmInput.addEventListener('input', () => {
+        deleteConfirmInput.classList.remove('is-invalid');
+    });
 
     // Change avatar button
     changeAvatarBtn.addEventListener('click', handleChangeAvatar);
@@ -497,35 +512,22 @@ async function saveProfileChanges() {
 }
 
 /**
- * Confirm and delete account
- */
-function confirmDeleteAccount() {
-    const confirmed = window.confirm(
-        '⚠️ WARNING: This will permanently delete your account and all associated data.\n\n' +
-        'This action cannot be undone. Are you sure you want to proceed?\n\n' +
-        'Type "DELETE" to confirm.'
-    );
-
-    if (confirmed) {
-        const userConfirm = prompt('Please type "DELETE" to confirm account deletion:');
-        if (userConfirm === 'DELETE') {
-            deleteAccount();
-        } else {
-            alert('❌ Account deletion cancelled.');
-        }
-    }
-}
-
-/**
  * Delete account
  */
 async function deleteAccount() {
     try {
+        // Close the modal
+        const deleteConfirmModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+        if (deleteConfirmModal) {
+            deleteConfirmModal.hide();
+        }
+
+        // Show loading state
+        showSuccessMessage('Deleting account...');
+        
         // In a real application, we would call the backend to delete the user
         // For now, just log out and redirect
         apiService.logout();
-        
-        showSuccessMessage('Account deletion initiated. Redirecting...');
         
         setTimeout(() => {
             window.location.href = '/';
