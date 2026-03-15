@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Check if user is authenticated
     if (!apiService.isAuthenticated()) {
-        window.location.href = '/pages/auth/login.html';
+        window.location.href = '/login';
         return;
     }
     
@@ -28,7 +28,7 @@ async function loadDashboardData() {
         const currentUser = apiService.getCurrentUser();
         if (!currentUser) {
             console.error('No current user found');
-            window.location.href = '/pages/auth/login.html';
+            window.location.href = '/login';
             return;
         }
         
@@ -42,7 +42,7 @@ async function loadDashboardData() {
         ]);
 
         const userRole = roleResult.status === 'fulfilled' ? roleResult.value : null;
-        const createEventBtn = document.querySelector('a[href="/pages/create-event.html"]');
+        const createEventBtn = document.querySelector('a[href="/create-event"]');
         const myEventsCard = document.getElementById('myEventsCard');
         if (userRole === 'seeker') {
             if (createEventBtn) createEventBtn.style.display = 'none';
@@ -85,7 +85,7 @@ function displayUpcomingEvents(events) {
     const loadMoreContainer = document.getElementById('loadMoreContainer');
     
     if (!events || events.length === 0) {
-        container.innerHTML = '<p class="text-muted">No upcoming events yet. <a href="/pages/events.html">Browse events</a></p>';
+        container.innerHTML = '<p class="text-muted">No upcoming events yet. <a href="/events">Browse events</a></p>';
         loadMoreContainer.style.display = 'none';
         return;
     }
@@ -181,7 +181,7 @@ function loadMoreEvents() {
         return `
         <div class="event-card">
             <h6 class="fw-bold">
-                <a href="/pages/event-details.html?id=${event.id}" class="text-decoration-none text-dark">
+                <a href="/events/${event.id}" class="text-decoration-none text-dark">
                     ${event.title}
                 </a>
             </h6>
@@ -199,7 +199,7 @@ function loadMoreEvents() {
                 <span class="badge ${badgeClass}">
                     ${badgeText}
                 </span>
-                <a href="/pages/event-details.html?id=${event.id}" class="btn btn-sm btn-outline-primary">
+                <a href="/events/${event.id}" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
@@ -233,7 +233,7 @@ function displayUserHobbies(hobbies) {
     const container = document.getElementById('dashboardHobbiesContainer');
     
     if (!hobbies || hobbies.length === 0) {
-        container.innerHTML = '<p class="text-muted">No hobbies yet. <a href="/pages/profile.html">Add hobbies</a></p>';
+        container.innerHTML = '<p class="text-muted">No hobbies yet. <a href="/profile">Add hobbies</a></p>';
         return;
     }
     

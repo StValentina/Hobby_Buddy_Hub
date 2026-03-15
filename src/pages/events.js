@@ -107,7 +107,7 @@ function renderEvents(events) {
 
     container.innerHTML = events.map(event => `
         <div class="col-lg-4 col-md-6">
-            <a href="/pages/event-details.html?id=${event.id}" class="event-card-link">
+            <a href="/events/${event.id}" class="event-card-link">
                 <div class="event-card">
                     <div class="event-card-header">
                         <span class="event-badge">${event.category}</span>

@@ -191,7 +191,11 @@ const hobbiesDatabase = [
 // Get hobby ID from URL
 function getHobbyIdFromURL() {
     const params = new URLSearchParams(window.location.search);
-    return params.get('id');
+    const queryId = params.get('id');
+    if (queryId) return queryId;
+
+    const pathMatch = window.location.pathname.match(/^\/hobbies\/([^/]+)$/);
+    return pathMatch ? decodeURIComponent(pathMatch[1]) : null;
 }
 
 // Show error message based on authentication status
@@ -203,8 +207,8 @@ function getErrorMessage(itemType = 'Hobby') {
             <div class="container text-center py-5">
                 <h2>You Are Not Registered</h2>
                 <p>Please register or log in to access ${itemType.toLowerCase()}s.</p>
-                <a href="/pages/auth/register.html" class="btn btn-primary me-2">Register</a>
-                <a href="/pages/auth/login.html" class="btn btn-outline-primary">Log In</a>
+                <a href="/register" class="btn btn-primary me-2">Register</a>
+                <a href="/login" class="btn btn-outline-primary">Log In</a>
             </div>
         `;
     } else {
@@ -212,7 +216,7 @@ function getErrorMessage(itemType = 'Hobby') {
             <div class="container text-center py-5">
                 <h2>${itemType} Not Found</h2>
                 <p>Sorry, we couldn't find the ${itemType.toLowerCase()} you're looking for.</p>
-                <a href="/pages/hobbies.html" class="btn btn-primary">Back to ${itemType}s</a>
+                <a href="/hobbies" class="btn btn-primary">Back to ${itemType}s</a>
             </div>
         `;
     }
@@ -282,7 +286,7 @@ function renderHobbyDetails(hobby) {
                     <p><i class="bi bi-calendar-event"></i>${event.date}</p>
                     <p><i class="bi bi-geo-alt"></i>${event.location}</p>
                 </div>
-                <a href="/pages/event-details.html?id=${event.id}" class="btn btn-sm btn-primary">
+                <a href="/events/${event.id}" class="btn btn-sm btn-primary">
                     View Event <i class="bi bi-arrow-right ms-1"></i>
                 </a>
             </div>
@@ -330,13 +334,13 @@ function setupJoinButton(hobby) {
     
     joinBtn.addEventListener('click', async () => {
         if (!apiService.isAuthenticated()) {
-            window.location.href = '/pages/auth/login.html';
+            window.location.href = '/login';
             return;
         }
 
         const currentUser = apiService.getCurrentUser();
         if (!currentUser?.id) {
-            window.location.href = '/pages/auth/login.html';
+            window.location.href = '/login';
             return;
         }
 

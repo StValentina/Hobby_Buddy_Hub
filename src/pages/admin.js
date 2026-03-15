@@ -610,13 +610,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     editEventModal = new bootstrap.Modal(document.getElementById('editEventModal'));
 
     if (!apiService.isAuthenticated()) {
-        window.location.href = '/pages/auth/login.html';
+        window.location.href = '/login';
         return;
     }
 
     currentUser = apiService.getCurrentUser();
     if (!currentUser) {
-        window.location.href = '/pages/auth/login.html';
+        window.location.href = '/login';
         return;
     }
 
@@ -624,7 +624,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (currentRole !== 'admin') {
         showMessage('Access denied. Admins only.', 'danger');
         setTimeout(() => {
-            window.location.href = '/pages/dashboard.html';
+            window.location.href = '/dashboard';
         }, 1200);
         return;
     }

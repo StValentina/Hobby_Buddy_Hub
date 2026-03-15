@@ -102,7 +102,7 @@ function renderHobbies(hobbies) {
 
         return `
         <div class="col-lg-3 col-md-6">
-            <a href="/pages/hobby-details.html?id=${hobby.id}" class="hobby-card-link">
+            <a href="/hobbies/${hobby.id}" class="hobby-card-link">
                 <div class="hobby-card">
                     <div class="hobby-card-image">
                         ${imageContent}

@@ -5,5 +5,5 @@ export async function initApp() {
   Router.init();
   
   // Load initial page based on current URL
-  Router.loadPage(window.location.pathname);
+  Router.loadPage(`${window.location.pathname}${window.location.search}`);
 }

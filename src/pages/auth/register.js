@@ -226,7 +226,7 @@ form.addEventListener('submit', async (e) => {
             // Account created but could not sign in automatically.
             showAlert('Account created. Please sign in to continue.', 'success');
             setTimeout(() => {
-                window.location.href = '/pages/auth/login.html';
+                window.location.href = '/login';
             }, 1000);
             return;
         }
@@ -244,7 +244,7 @@ form.addEventListener('submit', async (e) => {
 
         showAlert('Account created successfully! Redirecting to dashboard...', 'success');
         setTimeout(() => {
-            window.location.href = '/pages/dashboard.html';
+            window.location.href = '/dashboard';
         }, 800);
         
     } catch (error) {

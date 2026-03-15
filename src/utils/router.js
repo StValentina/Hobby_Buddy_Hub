@@ -1,109 +1,201 @@
 /**
- * Simple client-side router for multi-page application
+ * Client-side SPA router for Hobby Buddy Hub
+ * Dynamically loads and renders pages based на routes
  */
-
-import { IndexPage } from '../pages/home.js';
-import { DashboardPage } from '../pages/dashboard.js';
 
 class AppRouter {
   constructor() {
     this.routes = new Map();
-    this.currentPage = null;
   }
 
   /**
-   * Initialize all routes
+   * Initialize routes mapping logical URLs to HTML file paths
    */
   init() {
-    this.registerRoute('/', IndexPage);
-    this.registerRoute('/dashboard', DashboardPage);
-    
-    // Add more routes here as pages are created
-    // this.registerRoute('/login', LoginPage);
-    // this.registerRoute('/projects/:id', ProjectDetailsPage);
+    this.registerRoute('/', '/pages/home.html');
+    this.registerRoute('/login', '/pages/auth/login.html');
+    this.registerRoute('/register', '/pages/auth/register.html');
+    this.registerRoute('/hobbies', '/pages/hobbies.html');
+    this.registerRoute('/people', '/pages/people.html');
+    this.registerRoute('/events', '/pages/events.html');
+    this.registerRoute('/create-event', '/pages/create-event.html');
+    this.registerRoute('/profile', '/pages/profile.html');
+    this.registerRoute('/admin', '/pages/admin.html');
+    this.registerRoute('/dashboard', '/pages/dashboard.html');
+    this.registerRoute('/hobbies/:id', '/pages/hobby-details.html');
+    this.registerRoute('/events/:id', '/pages/event-details.html');
   }
 
   /**
-   * Register a route with its page handler
+   * Register a route mapping
    */
-  registerRoute(path, pageClass) {
-    this.routes.set(path, pageClass);
+  registerRoute(path, filePath) {
+    this.routes.set(path, filePath);
   }
 
   /**
-   * Navigate to a specific path
+   * Navigate to path and load page
    */
   navigate(path) {
     window.history.pushState({}, '', path);
     this.loadPage(path);
   }
 
-/**
- * Load and render a page based on path
- */
-async loadPage(path) {
-    // Normalize path (remove trailing slash except for root)
-    if (path !== '/' && path.endsWith('/')) {
-      path = path.slice(0, -1);
+  /**
+   * Resolve logical route to physical file path and query params
+   */
+  resolveRoute(pathname, search = '') {
+    if (pathname !== '/' && pathname.endsWith('/')) {
+      pathname = pathname.slice(0, -1);
     }
 
-    const PageClass = this.routes.get(path);
-    
-    if (!PageClass) {
-      console.error(`Route not found: ${path}`);
-      this.loadErrorPage();
+    // Try dynamic routes (e.g., /events/123, /hobbies/456)
+    const eventMatch = pathname.match(/^\/events\/([^/]+)$/);
+    if (eventMatch) {
+      return {
+        filePath: this.routes.get('/events/:id'),
+        query: `?id=${encodeURIComponent(eventMatch[1])}`
+      };
+    }
+
+    const hobbyMatch = pathname.match(/^\/hobbies\/([^/]+)$/);
+    if (hobbyMatch) {
+      return {
+        filePath: this.routes.get('/hobbies/:id'),
+        query: `?id=${encodeURIComponent(hobbyMatch[1])}`
+      };
+    }
+
+    // Direct route lookup
+    const filePath = this.routes.get(pathname);
+    if (filePath) {
+      return { filePath, query: '' };
+    }
+
+    // Backward compat: query-based detail routes (e.g., /events?id=123)
+    const params = new URLSearchParams(search);
+    if (pathname === '/events' && params.get('id')) {
+      return {
+        filePath: this.routes.get('/events/:id'),
+        query: search
+      };
+    }
+    if (pathname === '/hobbies' && params.get('id')) {
+      return {
+        filePath: this.routes.get('/hobbies/:id'),
+        query: search
+      };
+    }
+
+    return null;
+  }
+
+  /**
+   * Load a page by fetching and rendering its HTML
+   */
+  async loadPage(fullPath) {
+    let url;
+    try {
+      url = new URL(fullPath, window.location.origin);
+      const resolved = this.resolveRoute(url.pathname, url.search);
+
+      if (!resolved) {
+        console.error(`Route not found: ${url.pathname}`);
+        this.showErrorPage();
+        return;
+      }
+
+      console.log(`🚀 Loading: ${url.pathname}`);
+
+      // Fetch the HTML for the page
+      const fetchUrl = `${resolved.filePath}${resolved.query}`;
+      console.log(`📡 Fetching: ${fetchUrl}`);
+      
+      const response = await fetch(fetchUrl);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} for ${fetchUrl}`);
+      }
+
+      const html = await response.text();
+      const parser = new DOMParser();
+      const pageDoc = parser.parseFromString(html, 'text/html');
+
+      // Update page title
+      document.title = pageDoc.title;
+
+      // Remove old page-specific styles
+      document
+        .querySelectorAll('link[rel="stylesheet"][href*="/src/styles/pages/"]')
+        .forEach(link => link.remove());
+
+      // Add new page styles
+      pageDoc
+        .querySelectorAll('link[rel="stylesheet"][href*="/src/styles/pages/"]')
+        .forEach(link => {
+          const newLink = document.createElement('link');
+          newLink.rel = 'stylesheet';
+          newLink.href = link.getAttribute('href');
+          document.head.appendChild(newLink);
+        });
+
+      // Replace body content
+      document.body.innerHTML = pageDoc.body.innerHTML;
+
+      // Scripts inserted with innerHTML are inert; recreate them so they execute.
+      const scripts = Array.from(document.body.querySelectorAll('script'));
+      scripts.forEach((oldScript) => {
+        const newScript = document.createElement('script');
+
+        if (oldScript.type) {
+          newScript.type = oldScript.type;
+        }
+
+        const src = oldScript.getAttribute('src');
+        if (src) {
+          newScript.src = src;
+        } else {
+          newScript.textContent = oldScript.textContent;
+        }
+
+        oldScript.replaceWith(newScript);
+      });
+
+      console.log(`✅ Page loaded: ${url.pathname}`);
+    } catch (error) {
+      const failedPath = url ? url.pathname : String(fullPath || 'unknown');
+      console.error(`❌ Error loading ${failedPath}:`, error);
+      this.showErrorPage();
+    }
+  }
+
+  /**
+   * Show error page
+   */
+  showErrorPage() {
+    const main = document.querySelector('main');
+    if (main) {
+      main.innerHTML = `
+        <div class="container mt-5">
+          <div class="alert alert-danger">
+            <h4>Page Not Found</h4>
+            <p>The page you're looking for doesn't exist.</p>
+            <a href="/" class="btn btn-primary">Go Home</a>
+          </div>
+        </div>
+      `;
       return;
     }
 
-    try {
-      // Teardown previous page
-      if (this.currentPage && this.currentPage.teardown) {
-        this.currentPage.teardown();
-      }
-
-      // Create and initialize new page
-      this.currentPage = new PageClass();
-      await this.currentPage.render();
-
-      // Set up page after rendering if needed
-      if (this.currentPage.setup) {
-        await this.currentPage.setup();
-      }
-      
-      // Re-initialize header and footer components after page load
-      // This ensures header shows correct auth state (logged in / logged out)
-      this.reinitializeComponents();
-    } catch (error) {
-      console.error(`Error loading page: ${path}`, error);
-      this.loadErrorPage();
-    }
-  }
-
-  /**
-   * Reinitialize header and footer components
-   */
-  reinitializeComponents() {
-    import('../components/loader.js').then((module) => {
-      // ComponentsLoader will auto-initialize on import
-      console.log('Components re-initialized for page change');
-    }).catch(error => {
-      console.error('Failed to re-initialize components:', error);
-    });
-  }
-
-  /**
-   * Display error page
-   */
-  loadErrorPage() {
-    const app = document.getElementById('app');
-    app.innerHTML = `
-      <div class="container mt-5">
-        <div class="alert alert-danger" role="alert">
-          <h4 class="alert-heading">Page Not Found</h4>
-          <p>The page you are looking for does not exist.</p>
-          <a href="/" class="btn btn-primary">Go Home</a>
+    document.body.innerHTML = `
+      <main class="min-vh-100 d-flex align-items-center">
+        <div class="container mt-5">
+          <div class="alert alert-danger">
+            <h4>Page Not Found</h4>
+            <p>The page you're looking for doesn't exist.</p>
+            <a href="/" class="btn btn-primary">Go Home</a>
+          </div>
         </div>
-      </div>
+      </main>
     `;
   }
 }

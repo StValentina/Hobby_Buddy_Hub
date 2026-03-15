@@ -54,14 +54,14 @@ export class Header {
 
     const adminNavHtml = isAdmin ? `
         <li class="nav-item">
-          <a class="nav-link" href="/pages/admin.html">
+          <a class="nav-link" href="/admin">
             <i class="bi bi-shield-lock me-1"></i>Admin
           </a>
         </li>
       ` : '';
 
     const adminDropdownItem = isAdmin ? `
-            <li><a class="dropdown-item" href="/pages/admin.html">
+            <li><a class="dropdown-item" href="/admin">
               <i class="bi bi-shield-lock me-2"></i>Admin Panel
             </a></li>
       ` : '';
@@ -80,10 +80,10 @@ export class Header {
             <i class="bi bi-person-circle me-1"></i>${userDisplayName}
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="/pages/profile.html">
+            <li><a class="dropdown-item" href="/profile">
               <i class="bi bi-person me-2"></i>Profile
             </a></li>
-            <li><a class="dropdown-item" href="/pages/dashboard.html">
+            <li><a class="dropdown-item" href="/dashboard">
               <i class="bi bi-speedometer2 me-2"></i>Dashboard
             </a></li>
             ${adminDropdownItem}
@@ -107,12 +107,12 @@ export class Header {
   renderUnauthenticatedUI() {
     const authHtml = `
         <li class="nav-item">
-          <a class="nav-link" href="/pages/auth/login.html">
+          <a class="nav-link" href="/login">
             <i class="bi bi-box-arrow-in-right me-1"></i>Login
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link btn btn-primary btn-sm text-white ms-2" href="/pages/auth/register.html">
+          <a class="nav-link btn btn-primary btn-sm text-white ms-2" href="/register">
             <i class="bi bi-person-plus me-1"></i>Sign Up
           </a>
         </li>
@@ -154,17 +154,17 @@ export class Header {
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/pages/hobbies.html">
+                <a class="nav-link" href="/hobbies">
                   <i class="bi bi-star me-1"></i>Hobbies
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/pages/events.html">
+                <a class="nav-link" href="/events">
                   <i class="bi bi-calendar-event me-1"></i>Events
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/pages/people.html">
+                <a class="nav-link" href="/people">
                   <i class="bi bi-people me-1"></i>Find People
                 </a>
               </li>
@@ -199,7 +199,7 @@ window.headerLogout = function(event) {
     apiService.logout();
 
     // Redirect to login page
-    window.location.href = '/pages/auth/login.html';
+    window.location.href = '/login';
   } catch (error) {
     console.error('Logout error:', error);
     alert('Failed to logout. Please try again.');

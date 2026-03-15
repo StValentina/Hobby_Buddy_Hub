@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Check if user is authenticated
     if (!apiService.isAuthenticated()) {
-        window.location.href = '/pages/auth/login.html';
+        window.location.href = '/login';
         return;
     }
     
@@ -91,7 +91,7 @@ async function loadUserProfile() {
             const currentUser = apiService.getCurrentUser();
             if (!currentUser) {
                 console.error('No current user found');
-                window.location.href = '/pages/auth/login.html';
+                window.location.href = '/login';
                 return;
             }
             userId = currentUser.id;
@@ -193,7 +193,7 @@ function displayHobbies(hobbies) {
 function displayUpcomingEvents(events) {
     const eventsList = document.getElementById('upcomingEventsList');
     if (!events || events.length === 0) {
-        eventsList.innerHTML = '<p class="text-muted">No upcoming events yet. <a href="/pages/events.html">Browse events</a></p>';
+        eventsList.innerHTML = '<p class="text-muted">No upcoming events yet. <a href="/events">Browse events</a></p>';
         return;
     }
 
@@ -201,7 +201,7 @@ function displayUpcomingEvents(events) {
         <div class="event-card mb-3 p-3 border rounded">
             <div class="d-flex justify-content-between align-items-start mb-2">
                 <h5 class="mb-0">
-                    <a href="/pages/event-details.html?id=${event.id}" class="text-decoration-none">
+                    <a href="/events/${event.id}" class="text-decoration-none">
                         ${event.title}
                     </a>
                 </h5>

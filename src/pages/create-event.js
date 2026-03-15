@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Check if user is authenticated
     if (!apiService.isAuthenticated()) {
-        window.location.href = '/pages/auth/login.html';
+        window.location.href = '/login';
         return;
     }
     
@@ -50,7 +50,7 @@ async function loadHobbiesDropdown() {
         if (errorMessage.includes('session has expired') || errorMessage.includes('jwt') || errorMessage.includes('auth')) {
             showErrorMessage('Session expired. Redirecting to login...');
             setTimeout(() => {
-                window.location.href = '/pages/auth/login.html';
+                window.location.href = '/login';
             }, 1200);
             return;
         }
@@ -113,7 +113,7 @@ async function handleFormSubmit() {
         const currentUser = apiService.getCurrentUser();
         if (!currentUser) {
             showErrorMessage('User not authenticated');
-            window.location.href = '/pages/auth/login.html';
+            window.location.href = '/login';
             return;
         }
         
@@ -178,7 +178,7 @@ async function handleFormSubmit() {
             
             // Redirect to events page after a short delay
             setTimeout(() => {
-                window.location.href = `/pages/event-details.html?id=${result.id}`;
+                window.location.href = `/events/${result.id}`;
             }, 1500);
             
         } catch (error) {

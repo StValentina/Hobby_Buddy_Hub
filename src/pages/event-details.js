@@ -7,7 +7,11 @@ import { apiService } from '/src/services/api.js';
 // Get event ID from URL parameters
 function getEventIdFromURL() {
     const params = new URLSearchParams(window.location.search);
-    return params.get('id');
+    const queryId = params.get('id');
+    if (queryId) return queryId;
+
+    const pathMatch = window.location.pathname.match(/^\/events\/([^/]+)$/);
+    return pathMatch ? decodeURIComponent(pathMatch[1]) : null;
 }
 
 // Show error message based on authentication status
@@ -19,8 +23,8 @@ function getErrorMessage() {
             <div class="container text-center py-5">
                 <h2>You Are Not Registered</h2>
                 <p>Please register or log in to access events.</p>
-                <a href="/pages/auth/register.html" class="btn btn-primary me-2">Register</a>
-                <a href="/pages/auth/login.html" class="btn btn-outline-primary">Log In</a>
+                <a href="/register" class="btn btn-primary me-2">Register</a>
+                <a href="/login" class="btn btn-outline-primary">Log In</a>
             </div>
         `;
     } else {
@@ -28,7 +32,7 @@ function getErrorMessage() {
             <div class="container text-center py-5">
                 <h2>Event Not Found</h2>
                 <p>Sorry, we couldn't find the event you're looking for.</p>
-                <a href="/pages/events.html" class="btn btn-primary">Back to Events</a>
+                <a href="/events" class="btn btn-primary">Back to Events</a>
             </div>
         `;
     }
@@ -57,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="container text-center py-5">
                 <h2>Error Loading Event</h2>
                 <p>Failed to load event details. Please try again.</p>
-                <a href="/pages/events.html" class="btn btn-primary">Back to Events</a>
+                <a href="/events" class="btn btn-primary">Back to Events</a>
             </div>
         `;
     }
@@ -153,13 +157,13 @@ function setupButtonHandlers(event) {
 
     joinBtn.addEventListener('click', async () => {
         if (!apiService.isAuthenticated()) {
-            window.location.href = '/pages/auth/login.html';
+            window.location.href = '/login';
             return;
         }
 
         const currentUser = apiService.getCurrentUser();
         if (!currentUser?.id) {
-            window.location.href = '/pages/auth/login.html';
+            window.location.href = '/login';
             return;
         }
 
@@ -172,7 +176,7 @@ function setupButtonHandlers(event) {
             alert(`✅ Great! You've joined "${event.title}". See you there!`);
             // Redirect to events page after showing success message
             setTimeout(() => {
-                window.location.href = '/pages/events.html';
+                window.location.href = '/events';
             }, 1000);
         } catch (error) {
             console.error('Failed to join event:', error);
@@ -182,13 +186,13 @@ function setupButtonHandlers(event) {
 
     interestedBtn.addEventListener('click', async () => {
         if (!apiService.isAuthenticated()) {
-            window.location.href = '/pages/auth/login.html';
+            window.location.href = '/login';
             return;
         }
 
         const currentUser = apiService.getCurrentUser();
         if (!currentUser?.id) {
-            window.location.href = '/pages/auth/login.html';
+            window.location.href = '/login';
             return;
         }
 

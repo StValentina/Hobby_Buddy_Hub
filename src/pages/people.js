@@ -10,8 +10,8 @@ function getErrorMessage(pageType = 'People') {
         <div class="container text-center py-5">
             <h2>You Are Not Registered</h2>
             <p>Please register or log in to find and connect with people.</p>
-            <a href="/pages/auth/register.html" class="btn btn-primary me-2">Register</a>
-            <a href="/pages/auth/login.html" class="btn btn-outline-primary">Log In</a>
+            <a href="/register" class="btn btn-primary me-2">Register</a>
+            <a href="/login" class="btn btn-outline-primary">Log In</a>
         </div>
     `;
 }
@@ -196,7 +196,7 @@ function renderPeople(people) {
                         <p class="person-bio">${person.bio}</p>
                     </div>
                     <div class="person-card-footer">
-                        <a href="/pages/profile.html?viewUserId=${person.id}" class="btn btn-view-profile">
+                        <a href="/profile?viewUserId=${person.id}" class="btn btn-view-profile">
                             <i class="bi bi-eye me-2"></i>View Profile
                         </a>
                     </div>
