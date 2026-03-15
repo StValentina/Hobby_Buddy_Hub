@@ -48,9 +48,7 @@ For detailed feature description, see [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md).
 ```
 Hobby_Buddy_Hub/
 ├── src/
-│   ├── app.js                  # Application entry point
 │   ├── config.js               # Supabase configuration
-│   ├── main.js                 # Initialization
 │   ├── components/             # Reusable UI components
 │   │   ├── header.js
 │   │   ├── footer.js
@@ -67,13 +65,11 @@ Hobby_Buddy_Hub/
 │   ├── services/
 │   │   └── api.js              # APIService for Supabase operations
 │   ├── styles/                 # Component and page styles
-│   └── utils/
-│       └── router.js           # Application router
+│   └── utils/                  # Shared utilities
 │
 ├── pages/                      # HTML page templates
-│   ├── home.html
 │   ├── hobbies.html
-│   ├── hobbies-details.html
+│   ├── hobby-details.html
 │   ├── events.html
 │   ├── event-details.html
 │   ├── create-event.html
@@ -109,6 +105,7 @@ Hobby_Buddy_Hub/
 - `src/services/api.js` – APIService class for all database operations
 - `src/components/header.js` – Navigation with authentication support
 - `supabase/migrations/` – Database schema and setup
+- `index.html` – Home page entry point
 - `pages/*.html` – Page templates
 - `src/pages/*.js` – Page logic and event handlers
 

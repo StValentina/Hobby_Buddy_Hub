@@ -269,7 +269,7 @@ Example valid passwords:
 All pages in the application include authentication support:
 
 ### Core Pages
-- [pages/home.html](pages/home.html) – Home page with hero section
+- [index.html](index.html) – Home page with hero section
 - [pages/hobbies.html](pages/hobbies.html) – Browse hobbies catalog
 - [pages/hobby-details.html](pages/hobby-details.html) – View hobby details
 - [pages/events.html](pages/events.html) – Browse upcoming events
@@ -446,8 +446,7 @@ src/services/
 
 ### Utilities
 ```
-src/utils/
-└── router.js                # Application router for navigation
+src/utils/                   # Shared utility helpers (currently minimal)
 ```
 
 ### Styles
@@ -469,8 +468,8 @@ public/css/
 ```
 src/
 ├── config.js                # Supabase configuration
-├── main.js                  # Application entry point
-├── app.js                   # App initialization
+├── components/              # Shared UI components
+├── pages/                   # Page-specific scripts
 └── ...
 ```
 

@@ -39,24 +39,21 @@ function logicalRouteRewritePlugin() {
 
         const eventMatch = pathname.match(/^\/events\/([^/]+)$/);
         if (eventMatch) {
-          const id = encodeURIComponent(eventMatch[1]);
-          req.url = `/pages/event-details.html?id=${id}`;
+          req.url = '/pages/event-details.html';
           next();
           return;
         }
 
         const hobbyMatch = pathname.match(/^\/hobbies\/([^/]+)$/);
         if (hobbyMatch) {
-          const id = encodeURIComponent(hobbyMatch[1]);
-          req.url = `/pages/hobby-details.html?id=${id}`;
+          req.url = '/pages/hobby-details.html';
           next();
           return;
         }
 
         const peopleMatch = pathname.match(/^\/people\/([^/]+)$/);
         if (peopleMatch) {
-          const id = encodeURIComponent(peopleMatch[1]);
-          req.url = `/pages/profile.html?viewUserId=${id}`;
+          req.url = '/pages/profile.html';
           next();
           return;
         }
@@ -103,7 +100,6 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         dashboard: resolve(__dirname, 'pages/dashboard.html'),
-        home: resolve(__dirname, 'pages/home.html'),
         hobbies: resolve(__dirname, 'pages/hobbies.html'),
         hobbyDetails: resolve(__dirname, 'pages/hobby-details.html'),
         events: resolve(__dirname, 'pages/events.html'),

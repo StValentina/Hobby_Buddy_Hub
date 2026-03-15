@@ -2,38 +2,6 @@
  * Global utility functions
  */
 
-const componentCache = new Map();
-
-// Load HTML component (header/footer)
-export async function loadComponent(componentPath, containerId) {
-  try {
-    const container = document.getElementById(containerId);
-    if (!container) {
-      return;
-    }
-
-    // Do not overwrite containers that were already rendered by dynamic JS components.
-    if (container.innerHTML.trim().length > 0) {
-      return;
-    }
-
-    let html = componentCache.get(componentPath);
-    if (!html) {
-      const response = await fetch(componentPath, { cache: 'no-store' });
-      if (!response.ok) {
-        console.warn(`Component not found: ${componentPath} (${response.status})`);
-        return;
-      }
-      html = await response.text();
-      componentCache.set(componentPath, html);
-    }
-
-    container.innerHTML = html;
-  } catch (error) {
-    console.error(`Error loading component from ${componentPath}:`, error);
-  }
-}
-
 // Initialize global components
 export async function initializeGlobalComponents() {
   try {
@@ -42,18 +10,6 @@ export async function initializeGlobalComponents() {
   } catch (error) {
     console.error('Failed to initialize global components:', error);
   }
-}
-
-// Get base path for multi-page setup
-export function getBasePath() {
-  const currentPath = window.location.pathname;
-  const pagesIndex = currentPath.indexOf('/pages/');
-  
-  if (pagesIndex !== -1) {
-    return currentPath.substring(0, pagesIndex + 1);
-  }
-  
-  return '/';
 }
 
 // Logout handler (placeholder)
@@ -238,8 +194,6 @@ window.updateConnectionRequestsBadge = async function() {
 };
 
 // Keep backwards compatibility for scripts that access these helpers on window
-window.loadComponent = loadComponent;
 window.initializeGlobalComponents = initializeGlobalComponents;
-window.getBasePath = getBasePath;
 window.handleLogout = handleLogout;
 window.setActiveNav = setActiveNav;
