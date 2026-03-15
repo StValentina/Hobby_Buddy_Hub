@@ -47,6 +47,23 @@
     margin-bottom: 8px;
 }
 
+#resetFiltersBtn {
+    font-size: 1rem;
+    border: 2px solid #e2e8f0;
+    background: white;
+    color: #495057;
+    transition: all 0.3s ease;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#resetFiltersBtn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
 /* People Card Grid */
 #peopleGrid {
     padding: 20px 0;

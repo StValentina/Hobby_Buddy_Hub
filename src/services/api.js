@@ -1479,16 +1479,36 @@ class APIService {
       
       console.log('Profiles fetched:', profiles);
       
-      // Format profiles with hobbies
-      const formattedProfiles = profiles.map((profile, index) => ({
-        id: profile.id,
-        name: profile.full_name || 'User',
-        city: profile.city || 'Unknown',
-        bio: profile.bio || 'No bio yet',
-        avatar_url: profile.avatar_url,
-        hobbies: profile.user_hobbies ? profile.user_hobbies.map(uh => uh.hobbies?.name).filter(Boolean) : [],
-        role: index % 2 === 0 ? 'host' : 'seeker' // Alternate roles for demo
-      }));
+      // Format profiles with hobbies and tags
+      const formattedProfiles = await Promise.all(
+        profiles.map(async (profile, index) => {
+          // Get tags for each hobby
+          let tags = [];
+          if (profile.user_hobbies && profile.user_hobbies.length > 0) {
+            try {
+              const hobbyIds = profile.user_hobbies.map(uh => uh.hobbies?.id).filter(Boolean);
+              const tagsPromises = hobbyIds.map(hobbyId =>
+                this.get(`/hobby_tags?hobby_id=eq.${hobbyId}&select=tags(name)`)
+              );
+              const tagsResults = await Promise.all(tagsPromises);
+              tags = [...new Set(tagsResults.flat().map(t => t.tags?.name).filter(Boolean))];
+            } catch (error) {
+              console.warn('Failed to fetch tags for profile:', error);
+            }
+          }
+          
+          return {
+            id: profile.id,
+            name: profile.full_name || 'User',
+            city: profile.city || 'Unknown',
+            bio: profile.bio || 'No bio yet',
+            avatar_url: profile.avatar_url,
+            hobbies: profile.user_hobbies ? profile.user_hobbies.map(uh => uh.hobbies?.name).filter(Boolean) : [],
+            tags: tags,
+            role: index % 2 === 0 ? 'host' : 'seeker' // Alternate roles for demo
+          };
+        })
+      );
       
       return formattedProfiles;
     } catch (error) {

@@ -589,7 +589,7 @@ async function handleConnectRequest() {
         const connection = await apiService.sendConnectionRequest(viewedUserId);
         
         console.log('Connection request created:', connection);
-        showSuccessMessage(`Connection request sent to ${userProfile.full_name}!`);
+        showSuccessMessage('Connection request sent!');
         
         // Update button to show pending status
         connectBtn.disabled = true;

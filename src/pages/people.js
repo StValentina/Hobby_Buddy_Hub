@@ -23,8 +23,7 @@ let allPeople = [];
 let currentFilters = {
     name: '',
     hobby: '',
-    city: '',
-    role: ''
+    city: ''
 };
 
 // Pagination settings
@@ -43,6 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     await loadPeople();
+    await populateHobbiesFilter();
     setupEventListeners();
 });
 
@@ -75,7 +75,6 @@ function setupEventListeners() {
     const searchName = document.getElementById('searchName');
     const filterHobby = document.getElementById('filterHobby');
     const filterCity = document.getElementById('filterCity');
-    const filterRole = document.getElementById('filterRole');
     const resetBtn = document.getElementById('resetFiltersBtn');
 
     searchName.addEventListener('input', (e) => {
@@ -93,11 +92,6 @@ function setupEventListeners() {
         applyFilters();
     });
 
-    filterRole.addEventListener('change', (e) => {
-        currentFilters.role = e.target.value.toLowerCase();
-        applyFilters();
-    });
-
     resetBtn.addEventListener('click', resetFilters);
 }
 
@@ -107,11 +101,10 @@ function setupEventListeners() {
 function applyFilters() {
     const filtered = allPeople.filter(person => {
         const nameMatch = person.name.toLowerCase().includes(currentFilters.name);
-        const hobbyMatch = !currentFilters.hobby || person.hobbies.some(h => h.toLowerCase().includes(currentFilters.hobby));
+        const hobbyMatch = !currentFilters.hobby || person.hobbies.some(h => h.toLowerCase() === currentFilters.hobby);
         const cityMatch = !currentFilters.city || person.city.toLowerCase() === currentFilters.city;
-        const roleMatch = !currentFilters.role || person.role === currentFilters.role;
 
-        return nameMatch && hobbyMatch && cityMatch && roleMatch;
+        return nameMatch && hobbyMatch && cityMatch;
     });
 
     filteredPeople = filtered;
@@ -126,18 +119,49 @@ function resetFilters() {
     currentFilters = {
         name: '',
         hobby: '',
-        city: '',
-        role: ''
+        city: ''
     };
 
     document.getElementById('searchName').value = '';
     document.getElementById('filterHobby').value = '';
     document.getElementById('filterCity').value = '';
-    document.getElementById('filterRole').value = '';
 
     filteredPeople = allPeople;
     currentPage = 1;
     renderPeople(allPeople);
+}
+
+/**
+ * Populate hobbies filter dropdown from database
+ */
+async function populateHobbiesFilter() {
+    try {
+        // Fetch all hobbies from the database
+        const hobbies = await apiService.getHobbies();
+        
+        if (!hobbies || hobbies.length === 0) {
+            console.warn('No hobbies found in database');
+            return;
+        }
+
+        // Add hobbies to the select element
+        const filterHobbySelect = document.getElementById('filterHobby');
+        if (!filterHobbySelect) {
+            console.warn('Filter hobby select element not found');
+            return;
+        }
+
+        const existingOptions = filterHobbySelect.innerHTML;
+        const hobbyOptions = hobbies
+            .map(hobby => `<option value="${hobby.name.toLowerCase()}">${hobby.name}</option>`)
+            .join('');
+        
+        filterHobbySelect.innerHTML = existingOptions + hobbyOptions;
+        
+        console.log('Hobbies populated in filter:', hobbies);
+    } catch (error) {
+        console.error('Failed to populate hobbies filter:', error);
+    }
 }
 
 /**

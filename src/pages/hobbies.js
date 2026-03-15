@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.setActiveNav('Hobbies');
     attachEventListeners();
     loadHobbies();
+    populateTagsFilter();
 });
 
 /**
@@ -190,6 +191,39 @@ function filterHobbies() {
     });
 
     renderHobbies(filtered);
+}
+
+/**
+ * Populate tags filter dropdown from database
+ */
+async function populateTagsFilter() {
+    try {
+        // Fetch all tags from the database
+        const tags = await apiService.getTags();
+        
+        if (!tags || tags.length === 0) {
+            console.warn('No tags found in database');
+            return;
+        }
+
+        // Add tags to the select element
+        const categorySelect = document.getElementById('categorySelect');
+        if (!categorySelect) {
+            console.warn('Category select element not found');
+            return;
+        }
+
+        const existingOptions = categorySelect.innerHTML;
+        const tagOptions = tags
+            .map(tag => `<option value="${tag.name.toLowerCase()}">${tag.name}</option>`)
+            .join('');
+        
+        categorySelect.innerHTML = existingOptions + tagOptions;
+        
+        console.log('Tags populated in filter:', tags);
+    } catch (error) {
+        console.error('Failed to populate tags filter:', error);
+    }
 }
 
 /**
