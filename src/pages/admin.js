@@ -412,8 +412,12 @@ function openCreateTag() {
 }
 
 function openEditTag(tagId) {
-    const tag = tagsCache.find((t) => t.id === tagId);
-    if (!tag) return;
+    const normalizedTagId = String(tagId || '').trim();
+    const tag = tagsCache.find((t) => String(t.id) === normalizedTagId);
+    if (!tag) {
+        console.warn('Tag not found in cache with id:', tagId);
+        return;
+    }
 
     document.getElementById('editTagId').value = tag.id;
     document.getElementById('editTagName').value = tag.name || '';
@@ -693,6 +697,11 @@ function setupAdminCrudHandlers() {
         const tagId = document.getElementById('editTagId').value;
         const name = document.getElementById('editTagName').value.trim();
 
+        if (!tagId) {
+            showMessage('Please choose a tag to edit first.', 'danger');
+            return;
+        }
+
         if (!name) {
             showMessage('Tag name is required.', 'danger');
             return;
@@ -720,7 +729,7 @@ function setupAdminCrudHandlers() {
     document.getElementById('adminTagsTbody')?.addEventListener('click', (event) => {
         const target = event.target.closest('button');
         if (!target) return;
-        const tagId = target.getAttribute('data-tag-id');
+        const tagId = target.dataset.tagId || target.getAttribute('data-tag-id');
         if (!tagId) return;
 
         if (target.classList.contains('edit-tag-btn')) {
@@ -762,6 +771,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    await Promise.all([loadUsers(), loadHobbies(), loadEvents(), loadLocations(), loadTags()]);
     setupAdminCrudHandlers();
+    await Promise.all([loadUsers(), loadHobbies(), loadEvents(), loadLocations(), loadTags()]);
 });

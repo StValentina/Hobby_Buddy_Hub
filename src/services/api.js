@@ -285,7 +285,7 @@ class APIService {
   async getTags() {
     try {
       console.log('Fetching tags from Supabase...');
-      const tags = await this.get('/tags?select=id,name');
+      const tags = await this.get('/tags?select=id,name,created_at');
       console.log('Tags fetched:', tags);
       return tags || [];
     } catch (error) {
@@ -400,8 +400,9 @@ class APIService {
   async updateTag(tagId, updateData) {
     try {
       console.log(`Updating tag ${tagId}:`, updateData);
+      const safeTagId = encodeURIComponent(tagId);
       const result = await this.patch(
-        `/tags?id=eq.${tagId}`,
+        `/tags?id=eq.${safeTagId}`,
         updateData,
         {
           headers: {
@@ -410,7 +411,12 @@ class APIService {
         }
       );
 
-      return Array.isArray(result) ? result[0] : result;
+      const updatedTag = Array.isArray(result) ? result[0] : result;
+      if (!updatedTag) {
+        throw new Error('Tag update did not affect any record. Check admin rights and RLS policies for tags.');
+      }
+
+      return updatedTag;
     } catch (error) {
       console.error(`Failed to update tag ${tagId}:`, error);
       throw error;
@@ -423,7 +429,8 @@ class APIService {
   async deleteTag(tagId) {
     try {
       console.log(`Deleting tag ${tagId}...`);
-      const result = await this.delete(`/tags?id=eq.${tagId}`);
+      const safeTagId = encodeURIComponent(tagId);
+      const result = await this.delete(`/tags?id=eq.${safeTagId}`);
       console.log('Tag deleted successfully');
       return result;
     } catch (error) {
