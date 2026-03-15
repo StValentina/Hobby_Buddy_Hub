@@ -181,7 +181,7 @@ See [Implementation Status](PROJECT_CONTEXT.md#implementation-status) for detail
 
 **Backend**: Supabase PostgreSQL • Supabase Auth • Supabase Storage
 
-**Deployment**: Netlify/Vercel
+**Deployment**: Netlify
 
 **Version Control**: GitHub
 
