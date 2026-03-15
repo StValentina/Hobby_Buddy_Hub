@@ -372,6 +372,67 @@ class APIService {
   }
 
   /**
+   * Admin: create a new tag
+   */
+  async createTag(tagData) {
+    try {
+      console.log('Creating tag:', tagData);
+      const result = await this.post(
+        '/tags',
+        [tagData],
+        {
+          headers: {
+            'Prefer': 'return=representation'
+          }
+        }
+      );
+
+      return Array.isArray(result) ? result[0] : result;
+    } catch (error) {
+      console.error('Failed to create tag:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Admin: update an existing tag
+   */
+  async updateTag(tagId, updateData) {
+    try {
+      console.log(`Updating tag ${tagId}:`, updateData);
+      const result = await this.patch(
+        `/tags?id=eq.${tagId}`,
+        updateData,
+        {
+          headers: {
+            'Prefer': 'return=representation'
+          }
+        }
+      );
+
+      return Array.isArray(result) ? result[0] : result;
+    } catch (error) {
+      console.error(`Failed to update tag ${tagId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Admin: delete a tag
+   */
+  async deleteTag(tagId) {
+    try {
+      console.log(`Deleting tag ${tagId}...`);
+      const result = await this.delete(`/tags?id=eq.${tagId}`);
+      console.log('Tag deleted successfully');
+      return result;
+    } catch (error) {
+      console.error(`Failed to delete tag ${tagId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Get all events with related hobby and location information
    */
   async getEvents() {
@@ -1479,37 +1540,49 @@ class APIService {
       
       console.log('Profiles fetched:', profiles);
       
-      // Format profiles with hobbies and tags
+      // Get all user roles
+      const allRoles = await this.get('/user_roles?select=user_id,role');
+      const roleMap = {};
+      if (allRoles && allRoles.length > 0) {
+        allRoles.forEach(ur => {
+          roleMap[ur.user_id] = ur.role;
+        });
+      }
+      
+      // Filter out admin users and format profiles with hobbies and tags
       const formattedProfiles = await Promise.all(
-        profiles.map(async (profile, index) => {
-          // Get tags for each hobby
-          let tags = [];
-          if (profile.user_hobbies && profile.user_hobbies.length > 0) {
-            try {
-              const hobbyIds = profile.user_hobbies.map(uh => uh.hobbies?.id).filter(Boolean);
-              const tagsPromises = hobbyIds.map(hobbyId =>
-                this.get(`/hobby_tags?hobby_id=eq.${hobbyId}&select=tags(name)`)
-              );
-              const tagsResults = await Promise.all(tagsPromises);
-              tags = [...new Set(tagsResults.flat().map(t => t.tags?.name).filter(Boolean))];
-            } catch (error) {
-              console.warn('Failed to fetch tags for profile:', error);
+        profiles
+          .filter(profile => roleMap[profile.id] !== 'admin') // Exclude admins
+          .map(async (profile) => {
+            // Get tags for each hobby
+            let tags = [];
+            if (profile.user_hobbies && profile.user_hobbies.length > 0) {
+              try {
+                const hobbyIds = profile.user_hobbies.map(uh => uh.hobbies?.id).filter(Boolean);
+                const tagsPromises = hobbyIds.map(hobbyId =>
+                  this.get(`/hobby_tags?hobby_id=eq.${hobbyId}&select=tags(name)`)
+                );
+                const tagsResults = await Promise.all(tagsPromises);
+                tags = [...new Set(tagsResults.flat().map(t => t.tags?.name).filter(Boolean))];
+              } catch (error) {
+                console.warn('Failed to fetch tags for profile:', error);
+              }
             }
-          }
-          
-          return {
-            id: profile.id,
-            name: profile.full_name || 'User',
-            city: profile.city || 'Unknown',
-            bio: profile.bio || 'No bio yet',
-            avatar_url: profile.avatar_url,
-            hobbies: profile.user_hobbies ? profile.user_hobbies.map(uh => uh.hobbies?.name).filter(Boolean) : [],
-            tags: tags,
-            role: index % 2 === 0 ? 'host' : 'seeker' // Alternate roles for demo
-          };
-        })
+            
+            return {
+              id: profile.id,
+              name: profile.full_name || 'User',
+              city: profile.city || 'Unknown',
+              bio: profile.bio || 'No bio yet',
+              avatar_url: profile.avatar_url,
+              hobbies: profile.user_hobbies ? profile.user_hobbies.map(uh => uh.hobbies?.name).filter(Boolean) : [],
+              tags: tags,
+              role: roleMap[profile.id] || 'seeker' // Use actual role from database
+            };
+          })
       );
       
+      console.log('Formatted profiles (admins excluded):', formattedProfiles);
       return formattedProfiles;
     } catch (error) {
       console.error('Failed to fetch profiles:', error);

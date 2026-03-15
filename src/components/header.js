@@ -66,8 +66,7 @@ export class Header {
             </a></li>
       ` : '';
 
-    const authHtml = `
-        ${adminNavHtml}
+    const connectionsNavHtml = !isAdmin ? `
         <li class="nav-item">
           <a class="nav-link" href="/my-connections">
             <i class="bi bi-people me-1"></i>My Connections
@@ -78,6 +77,11 @@ export class Header {
             <i class="bi bi-inbox me-1"></i>Connection Requests <span class="badge bg-danger" id="connectionRequestsBadge" style="display: none;"></span>
           </a>
         </li>
+      ` : '';
+
+    const authHtml = `
+        ${adminNavHtml}
+        ${connectionsNavHtml}
         <li class="nav-item dropdown">
           <a 
             class="nav-link dropdown-toggle" 

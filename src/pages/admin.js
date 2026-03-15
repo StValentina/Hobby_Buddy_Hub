@@ -16,6 +16,8 @@ let createHobbyModal = null;
 let createEventModal = null;
 let editHobbyModal = null;
 let editEventModal = null;
+let createTagModal = null;
+let editTagModal = null;
 
 function escapeHtml(value) {
     return String(value ?? '')
@@ -163,6 +165,28 @@ function renderEventsRows(events) {
     `).join('');
 }
 
+function renderTagsRows(tags) {
+    const tbody = document.getElementById('adminTagsTbody');
+
+    if (!tags || tags.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-muted py-4">No tags found.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = tags.map((tag) => `
+        <tr>
+            <td><strong>${escapeHtml(tag.name || 'N/A')}</strong></td>
+            <td>${tag.created_at ? new Date(tag.created_at).toLocaleDateString('en-US') : 'N/A'}</td>
+            <td>
+                <div class="actions-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary edit-tag-btn" data-tag-id="${tag.id}">Edit</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger delete-tag-btn" data-tag-id="${tag.id}">Delete</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
 async function loadUsers() {
     const tbody = document.getElementById('adminUsersTbody');
     tbody.innerHTML = '<tr><td colspan="5" class="text-muted py-4">Loading users...</td></tr>';
@@ -213,11 +237,15 @@ async function loadLocations() {
 }
 
 async function loadTags() {
+    const tbody = document.getElementById('adminTagsTbody');
+    tbody.innerHTML = '<tr><td colspan="3" class="text-muted py-4">Loading tags...</td></tr>';
+
     try {
         tagsCache = await apiService.getTags();
+        renderTagsRows(tagsCache);
     } catch (error) {
         console.error('Failed to load tags:', error);
-        tagsCache = [];
+        tbody.innerHTML = `<tr><td colspan="3" class="text-danger py-4">Failed to load tags: ${escapeHtml(error.message)}</td></tr>`;
     }
 }
 
@@ -377,6 +405,38 @@ async function deleteEvent(eventId) {
     }
 }
 
+function openCreateTag() {
+    const nameInput = document.getElementById('createTagName');
+    if (nameInput) nameInput.value = '';
+    createTagModal.show();
+}
+
+function openEditTag(tagId) {
+    const tag = tagsCache.find((t) => t.id === tagId);
+    if (!tag) return;
+
+    document.getElementById('editTagId').value = tag.id;
+    document.getElementById('editTagName').value = tag.name || '';
+    editTagModal.show();
+}
+
+async function deleteTag(tagId) {
+    const tag = tagsCache.find((t) => t.id === tagId);
+    if (!tag) return;
+
+    const confirmed = window.confirm(`Delete tag "${tag.name}"? This cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+        await apiService.deleteTag(tagId);
+        showMessage('Tag deleted successfully.');
+        await loadTags();
+    } catch (error) {
+        console.error('Failed to delete tag:', error);
+        showMessage(`Failed to delete tag: ${error.message}`, 'danger');
+    }
+}
+
 function setupSaveHandlers() {
     const buttons = document.querySelectorAll('.save-role-btn');
 
@@ -419,8 +479,10 @@ function setupSaveHandlers() {
 function setupAdminCrudHandlers() {
     document.getElementById('openCreateHobbyBtn')?.addEventListener('click', openCreateHobby);
     document.getElementById('openCreateEventBtn')?.addEventListener('click', openCreateEvent);
+    document.getElementById('openCreateTagBtn')?.addEventListener('click', openCreateTag);
     document.getElementById('refreshHobbiesBtn')?.addEventListener('click', loadHobbies);
     document.getElementById('refreshEventsBtn')?.addEventListener('click', loadEvents);
+    document.getElementById('refreshTagsBtn')?.addEventListener('click', loadTags);
 
     document.getElementById('createHobbyBtn')?.addEventListener('click', async () => {
         const name = document.getElementById('createHobbyName').value.trim();
@@ -598,6 +660,75 @@ function setupAdminCrudHandlers() {
             showMessage(`Failed to update event: ${error.message}`, 'danger');
         }
     });
+
+    // Tag CRUD handlers
+    document.getElementById('createTagBtn')?.addEventListener('click', async () => {
+        const name = document.getElementById('createTagName').value.trim();
+
+        if (!name) {
+            showMessage('Tag name is required.', 'danger');
+            return;
+        }
+
+        const createBtn = document.getElementById('createTagBtn');
+        const originalText = createBtn.textContent;
+        createBtn.disabled = true;
+        createBtn.textContent = 'Creating...';
+
+        try {
+            await apiService.createTag({ name });
+            createTagModal.hide();
+            showMessage('Tag created successfully.');
+            await loadTags();
+        } catch (error) {
+            console.error('Failed to create tag:', error);
+            showMessage(`Failed to create tag: ${error.message}`, 'danger');
+        } finally {
+            createBtn.disabled = false;
+            createBtn.textContent = originalText;
+        }
+    });
+
+    document.getElementById('saveTagBtn')?.addEventListener('click', async () => {
+        const tagId = document.getElementById('editTagId').value;
+        const name = document.getElementById('editTagName').value.trim();
+
+        if (!name) {
+            showMessage('Tag name is required.', 'danger');
+            return;
+        }
+
+        const saveBtn = document.getElementById('saveTagBtn');
+        const originalText = saveBtn.textContent;
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+
+        try {
+            await apiService.updateTag(tagId, { name });
+            editTagModal.hide();
+            showMessage('Tag updated successfully.');
+            await loadTags();
+        } catch (error) {
+            console.error('Failed to update tag:', error);
+            showMessage(`Failed to update tag: ${error.message}`, 'danger');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = originalText;
+        }
+    });
+
+    document.getElementById('adminTagsTbody')?.addEventListener('click', (event) => {
+        const target = event.target.closest('button');
+        if (!target) return;
+        const tagId = target.getAttribute('data-tag-id');
+        if (!tagId) return;
+
+        if (target.classList.contains('edit-tag-btn')) {
+            openEditTag(tagId);
+        } else if (target.classList.contains('delete-tag-btn')) {
+            deleteTag(tagId);
+        }
+    });
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -608,6 +739,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     createEventModal = new bootstrap.Modal(document.getElementById('createEventModal'));
     editHobbyModal = new bootstrap.Modal(document.getElementById('editHobbyModal'));
     editEventModal = new bootstrap.Modal(document.getElementById('editEventModal'));
+    createTagModal = new bootstrap.Modal(document.getElementById('createTagModal'));
+    editTagModal = new bootstrap.Modal(document.getElementById('editTagModal'));
 
     if (!apiService.isAuthenticated()) {
         window.location.href = '/login';
