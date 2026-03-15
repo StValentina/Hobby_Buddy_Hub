@@ -12,7 +12,15 @@ import { Footer } from './footer.js';
 window.__USE_JS_COMPONENTS__ = true;
 
 class ComponentsLoader {
+  static initialized = false;
+
   static initialize() {
+    if (ComponentsLoader.initialized) {
+      return;
+    }
+
+    ComponentsLoader.initialized = true;
+
     // Initialize Header
     const headerContainer = document.getElementById('header-container');
     if (headerContainer) {
@@ -37,15 +45,5 @@ class ComponentsLoader {
   }
 }
 
-// Auto-initialize when DOM is ready
-if (document.readyState === 'loading') {
-  // DOM is still loading
-  document.addEventListener('DOMContentLoaded', () => {
-    ComponentsLoader.initialize();
-  });
-} else {
-  // DOM is already loaded
-  ComponentsLoader.initialize();
-}
-
 export default ComponentsLoader;
+

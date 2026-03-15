@@ -111,7 +111,7 @@ class AppRouter {
       const fetchUrl = `${resolved.filePath}${resolved.query}`;
       console.log(`📡 Fetching: ${fetchUrl}`);
       
-      const response = await fetch(fetchUrl);
+      const response = await fetch(fetchUrl, { cache: 'no-store' });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status} for ${fetchUrl}`);
       }
@@ -138,11 +138,20 @@ class AppRouter {
           document.head.appendChild(newLink);
         });
 
-      // Replace body content
-      document.body.innerHTML = pageDoc.body.innerHTML;
+      // Extract main content from page (skip header/footer)
+      const mainContent = pageDoc.querySelector('main') || pageDoc.body;
+      
+      // Replace only the main content area (not header/footer)
+      const appContainer = document.querySelector('#app') || document.querySelector('main');
+      if (appContainer) {
+        appContainer.innerHTML = mainContent.innerHTML;
+      } else {
+        // Fallback: replace body if no app container found
+        document.body.innerHTML = pageDoc.body.innerHTML;
+      }
 
       // Scripts inserted with innerHTML are inert; recreate them so they execute.
-      const scripts = Array.from(document.body.querySelectorAll('script'));
+      const scripts = Array.from(document.querySelectorAll('main script, #app script'));
       scripts.forEach((oldScript) => {
         const newScript = document.createElement('script');
 

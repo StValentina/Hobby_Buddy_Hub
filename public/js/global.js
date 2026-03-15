@@ -19,7 +19,7 @@ export async function loadComponent(componentPath, containerId) {
 
     let html = componentCache.get(componentPath);
     if (!html) {
-      const response = await fetch(componentPath, { cache: 'force-cache' });
+      const response = await fetch(componentPath, { cache: 'no-store' });
       if (!response.ok) {
         console.warn(`Component not found: ${componentPath} (${response.status})`);
         return;
@@ -35,15 +35,13 @@ export async function loadComponent(componentPath, containerId) {
 }
 
 // Initialize global components
-export function initializeGlobalComponents() {
-  // Skip HTML fetch-based component loading when JS components loader is active.
-  if (window.__USE_JS_COMPONENTS__ === true) {
-    return;
+export async function initializeGlobalComponents() {
+  try {
+    const { default: ComponentsLoader } = await import('/src/components/loader.js');
+    ComponentsLoader.initialize();
+  } catch (error) {
+    console.error('Failed to initialize global components:', error);
   }
-
-  const basePath = getBasePath();
-  loadComponent(`${basePath}pages/components/header.html`, 'header-container');
-  loadComponent(`${basePath}pages/components/footer.html`, 'footer-container');
 }
 
 // Get base path for multi-page setup

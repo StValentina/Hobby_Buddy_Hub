@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - Hobby Buddy Hub</title>
+    <title>Hobby Buddy Hub</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -13,181 +13,22 @@
     <link rel="stylesheet" href="/public/css/global.css">
     <!-- Components Styles -->
     <link rel="stylesheet" href="/src/styles/components.css">
-    <!-- Page Styles -->
-    <link rel="stylesheet" href="/src/styles/pages/index/style.css">
 </head>
 <body>
-    <!-- Debug Info Panel (TEMPORARY) -->
-    <div id="debugPanel" style="position: fixed; bottom: 10px; right: 10px; background: #333; color: #fff; padding: 15px; border-radius: 5px; font-size: 12px; max-width: 300px; z-index: 9999; display: none; font-family: monospace;">
-        <strong>Auth Debug (Shift+D):</strong><br>
-        <code id="debugInfo" style="display: block; white-space: pre-wrap; margin: 10px 0;"></code>
-        <button id="clearAuthBtn" style="background: red; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; width: 100%; margin-bottom: 5px;">
-            Clear All Auth
-        </button>
-        <button id="diagBtn" style="background: blue; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; width: 100%;">
-            Open Diagnostics
-        </button>
-    </div>
-    
+    <!-- Header -->
     <header id="header-container"></header>
     
-    <main class="min-vh-100">
-        <!-- Hero Section -->
-        <section class="hero-section py-5" style="background: white; color: dark;">
-            <div class="container py-5">
-                <div class="row align-items-center" style="min-height: 50vh;">
-                    <div class="col-lg-8 mx-auto text-center">
-                        <h1 class="display-3 fw-bold mb-4 text-dark">
-                            Discover hobbies. Meet people. Create experiences.
-                        </h1>
-                        <p class="lead mb-5 text-dark">
-                            Find your next hobby partner or organize an activity.
-                        </p>
-                        <div class="d-flex gap-3 flex-wrap justify-content-center">
-                            <a href="/hobbies" class="btn btn-primary btn-lg fw-bold">
-                                Browse Hobbies <i class="bi bi-compass ms-2"></i>
-                            </a>
-                            <a href="/events" class="btn btn-outline-primary btn-lg fw-bold">
-                                Explore Events <i class="bi bi-calendar-event ms-2"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Features Section -->
-        <section class="py-5 bg-light">
-            <div class="container">
-                <h2 class="text-center mb-5 fw-bold">How It Works</h2>
-                <div class="row g-4">
-                    <div class="col-md-4">
-                        <a href="/register" class="text-decoration-none h-100">
-                            <div class="card h-100 border-0 shadow-sm" style="cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;" 
-                                 onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'" 
-                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0 0 rgba(0,0,0,0)'">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-person-plus text-primary" style="font-size: 3rem;"></i>
-                                    <h5 class="card-title mt-3">Create Profile</h5>
-                                    <p class="card-text text-muted">
-                                        Sign up and tell us about your interests and hobbies.
-                                    </p>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="/hobbies" class="text-decoration-none h-100">
-                            <div class="card h-100 border-0 shadow-sm" style="cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;" 
-                                 onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'" 
-                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0 0 rgba(0,0,0,0)'">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-search text-success" style="font-size: 3rem;"></i>
-                                    <h5 class="card-title mt-3">Find Activities</h5>
-                                    <p class="card-text text-muted">
-                                        Browse hobby events and activities happening near you.
-                                    </p>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="/people" class="text-decoration-none h-100">
-                            <div class="card h-100 border-0 shadow-sm" style="cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;" 
-                                 onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'" 
-                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0 0 rgba(0,0,0,0)'">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-people-fill text-warning" style="font-size: 3rem;"></i>
-                                    <h5 class="card-title mt-3">Connect & Enjoy</h5>
-                                    <p class="card-text text-muted">
-                                        Meet like-minded people and enjoy your hobbies together.
-                                    </p>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CTA Section -->
-        <section class="py-5 bg-primary text-white text-center">
-            <div class="container">
-                <h2 class="mb-4 fw-bold">Ready to Connect with Hobby Enthusiasts?</h2>
-                <a href="/hobbies" class="btn btn-light btn-lg fw-bold">
-                    Join Hobby Buddy Hub Today <i class="bi bi-arrow-right ms-2"></i>
-                </a>
-            </div>
-        </section>
-    </main>
+    <!-- Main Content Area (pages loaded here) -->
+    <main id="app"></main>
     
+    <!-- Footer -->
     <footer id="footer-container"></footer>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Debug Script -->
-    <script>
-        // CRITICAL: Validate and clean auth state
-        console.log('=== INDEX PAGE AUTH CHECK ===');
-        const token = localStorage.getItem('auth_token');
-        console.log('Token exists:', !!token);
-        console.log('Token value:', token);
-        
-        if (token) {
-            const parts = token.split('.');
-            console.log('Token parts:', parts.length, '(valid JWT should be 3)');
-            
-            if (parts.length !== 3) {
-                console.warn('INVALID TOKEN - CLEARING');
-                localStorage.removeItem('auth_token');
-                location.reload();
-            }
-        } else {
-            console.log('No auth token found - showing guest UI');
-        }
-        
-        // Show debug panel on Shift+D
-        document.addEventListener('keydown', (e) => {
-            if (e.shiftKey && e.key === 'D') {
-                const panel = document.getElementById('debugPanel');
-                panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-            }
-        });
-        
-        // Update debug info
-        function updateDebugInfo() {
-            const token = localStorage.getItem('auth_token');
-            const debugInfo = document.getElementById('debugInfo');
-            debugInfo.innerHTML = `
-Token: ${token ? 'YES (' + (token.substring(0, 20) + '...') + ')' : 'NO'}<br>
-Valid format: ${token && token.includes('.') ? 'YES' : 'NO'}<br>
-localStorage keys: ${Object.keys(localStorage).join(', ') || 'NONE'}
-            `;
-        }
-        
-        updateDebugInfo();
-        
-        // Add clear button handler
-        document.getElementById('clearAuthBtn').addEventListener('click', () => {
-            console.warn('USER CLICKED CLEAR AUTH');
-            localStorage.removeItem('auth_token');
-            location.reload();
-        });
-        
-        // Add diagnostics button handler
-        document.getElementById('diagBtn').addEventListener('click', () => {
-            window.location.href = '/auth/diagnostics';
-        });
-    </script>
-    
     <!-- Global JS -->
     <script type="module" src="/public/js/global.js"></script>
-    <!-- Global Components Loader -->
-    <script type="module">
-        import ComponentsLoader from '/src/components/loader.js';
-    </script>
-    <!-- Page JS with Module Support -->
-    <script type="module" src="/src/pages/home.js"></script>
+    <!-- Main App -->
+    <script type="module" src="/src/main.js"></script>
 </body>
 </html>
