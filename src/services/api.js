@@ -14,6 +14,12 @@ class APIService {
       console.error('Supabase configuration is missing. Check VITE_SUPABASE_URL and VITE_SUPABASE_KEY/VITE_SUPABASE_ANON_KEY.');
     }
   }
+  
+  ensureConfigured() {
+    if (!this.baseURL || !this.apiKey) {
+      throw new Error('Supabase is not configured. Verify VITE_SUPABASE_URL and VITE_SUPABASE_KEY in Netlify and redeploy.');
+    }
+  }
 
   /**
    * Decode JWT payload safely
@@ -80,6 +86,7 @@ class APIService {
    */
   async request(path, options = {}) {
     const url = `${this.baseURL}/rest/v1${path}`;
+    this.ensureConfigured();
     const mergedHeaders = {
       ...this.getHeaders(),
       ...(options.headers || {}),
@@ -495,6 +502,7 @@ class APIService {
    */
   async register(email, password, fullName = '') {
     try {
+      this.ensureConfigured();
       console.log('Registering user:', email);
       
       const response = await fetch(`${this.baseURL}/auth/v1/signup`, {
@@ -541,6 +549,7 @@ class APIService {
    */
   async login(email, password) {
     try {
+      this.ensureConfigured();
       console.log('Logging in user:', email);
       
       const response = await fetch(`${this.baseURL}/auth/v1/token?grant_type=password`, {

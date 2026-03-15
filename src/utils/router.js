@@ -58,6 +58,19 @@ class AppRouter {
       pathname = pathname.slice(0, -1);
     }
 
+    // Guard against accidental navigation to Supabase API paths.
+    if (
+      pathname.startsWith('/rest/v1') ||
+      pathname.startsWith('/auth/v1') ||
+      pathname.startsWith('/storage/v1')
+    ) {
+      console.error(`Invalid app route: ${pathname}. This looks like a Supabase API path.`);
+      return {
+        filePath: this.routes.get('/'),
+        query: ''
+      };
+    }
+
     // Try dynamic routes (e.g., /events/123, /hobbies/456)
     const eventMatch = pathname.match(/^\/events\/([^/]+)$/);
     if (eventMatch) {
