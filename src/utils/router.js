@@ -6,12 +6,21 @@
 class AppRouter {
   constructor() {
     this.routes = new Map();
+    this.baseStyles = new Set();
   }
 
   /**
    * Initialize routes mapping logical URLs to HTML file paths
    */
   init() {
+    // Remember styles that belong to the shell document and should stay loaded.
+    document.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
+      const href = link.getAttribute('href');
+      if (href) {
+        this.baseStyles.add(href);
+      }
+    });
+
     this.registerRoute('/', '/pages/home.html');
     this.registerRoute('/login', '/pages/auth/login.html');
     this.registerRoute('/register', '/pages/auth/register.html');
@@ -123,18 +132,29 @@ class AppRouter {
       // Update page title
       document.title = pageDoc.title;
 
-      // Remove old page-specific styles
+      // Remove previously injected page styles from old route.
       document
-        .querySelectorAll('link[rel="stylesheet"][href*="/src/styles/pages/"]')
-        .forEach(link => link.remove());
+        .querySelectorAll('link[data-router-page-style="true"]')
+        .forEach((link) => link.remove());
 
-      // Add new page styles
+      // Add page-specific styles from fetched page (supports both dev and production assets).
       pageDoc
-        .querySelectorAll('link[rel="stylesheet"][href*="/src/styles/pages/"]')
-        .forEach(link => {
+        .querySelectorAll('link[rel="stylesheet"]')
+        .forEach((link) => {
+          const href = link.getAttribute('href');
+          if (!href || this.baseStyles.has(href)) {
+            return;
+          }
+
+          const alreadyPresent = document.head.querySelector(`link[rel="stylesheet"][href="${href}"]`);
+          if (alreadyPresent) {
+            return;
+          }
+
           const newLink = document.createElement('link');
           newLink.rel = 'stylesheet';
-          newLink.href = link.getAttribute('href');
+          newLink.href = href;
+          newLink.setAttribute('data-router-page-style', 'true');
           document.head.appendChild(newLink);
         });
 

@@ -9,6 +9,10 @@ class APIService {
     this.baseURL = ENV.SUPABASE_URL;
     this.apiKey = ENV.SUPABASE_KEY;
     this.authToken = this.getAuthToken();
+
+    if (!this.baseURL || !this.apiKey) {
+      console.error('Supabase configuration is missing. Check VITE_SUPABASE_URL and VITE_SUPABASE_KEY/VITE_SUPABASE_ANON_KEY.');
+    }
   }
 
   /**
