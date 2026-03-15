@@ -7,6 +7,7 @@ class AppRouter {
   constructor() {
     this.routes = new Map();
     this.baseStyles = new Set();
+    this.baseScripts = new Set();
   }
 
   /**
@@ -18,6 +19,14 @@ class AppRouter {
       const href = link.getAttribute('href');
       if (href) {
         this.baseStyles.add(href);
+      }
+    });
+
+    // Remember scripts that belong to the shell document and should stay loaded.
+    document.querySelectorAll('script[src]').forEach((script) => {
+      const src = script.getAttribute('src');
+      if (src) {
+        this.baseScripts.add(src);
       }
     });
 
@@ -171,6 +180,35 @@ class AppRouter {
           document.head.appendChild(newLink);
         });
 
+      // Remove previously injected page scripts from old route.
+      document
+        .querySelectorAll('script[data-router-page-script="true"]')
+        .forEach((script) => script.remove());
+
+      // Inject page scripts from fetched document (head + body) so route logic executes.
+      pageDoc
+        .querySelectorAll('script[src]')
+        .forEach((script) => {
+          const src = script.getAttribute('src');
+          if (!src || this.baseScripts.has(src)) {
+            return;
+          }
+
+          const newScript = document.createElement('script');
+          newScript.src = src;
+          newScript.setAttribute('data-router-page-script', 'true');
+
+          if (script.type) {
+            newScript.type = script.type;
+          }
+
+          if (script.hasAttribute('crossorigin')) {
+            newScript.setAttribute('crossorigin', script.getAttribute('crossorigin') || '');
+          }
+
+          document.body.appendChild(newScript);
+        });
+
       // Extract main content from page (skip header/footer)
       const mainContent = pageDoc.querySelector('main') || pageDoc.body;
       
@@ -183,7 +221,7 @@ class AppRouter {
         document.body.innerHTML = pageDoc.body.innerHTML;
       }
 
-      // Scripts inserted with innerHTML are inert; recreate them so they execute.
+      // Inline scripts inserted with innerHTML are inert; recreate them so they execute.
       const scripts = Array.from(document.querySelectorAll('main script, #app script'));
       scripts.forEach((oldScript) => {
         const newScript = document.createElement('script');
