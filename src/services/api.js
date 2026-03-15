@@ -1734,6 +1734,247 @@ class APIService {
       throw error;
     }
   }
+
+  /**
+   * Send a connection request to another user
+   */
+  async sendConnectionRequest(receiverId) {
+    try {
+      const currentUser = this.getCurrentUser();
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      if (currentUser.id === receiverId) {
+        throw new Error('Cannot send connection request to yourself');
+      }
+
+      console.log(`Sending connection request from ${currentUser.id} to ${receiverId}...`);
+
+      // Check if a connection already exists between these two users
+      const existingConnection = await this.getConnectionStatus(currentUser.id, receiverId);
+      if (existingConnection) {
+        throw new Error(`Connection already exists with status: ${existingConnection.status}`);
+      }
+
+      const connectionData = {
+        requester_id: currentUser.id,
+        receiver_id: receiverId,
+        status: 'pending'
+      };
+
+      const result = await this.post(
+        '/connections',
+        [connectionData],
+        {
+          headers: {
+            'Prefer': 'return=representation'
+          }
+        }
+      );
+
+      const connection = Array.isArray(result) ? result[0] : result;
+      console.log('Connection request sent:', connection);
+      return connection;
+    } catch (error) {
+      console.error('Failed to send connection request:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get pending connection requests for the current user (as receiver)
+   */
+  async getPendingConnectionRequests() {
+    try {
+      const currentUser = this.getCurrentUser();
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      console.log(`Fetching pending connection requests for user ${currentUser.id}...`);
+
+      const requests = await this.get(
+        `/connections?receiver_id=eq.${encodeURIComponent(currentUser.id)}&status=eq.pending&select=id,requester_id,receiver_id,status,created_at,profiles!requester_id(id,full_name,avatar_url,city)&order=created_at.desc`
+      );
+
+      const formattedRequests = (requests || []).map(req => ({
+        id: req.id,
+        requester_id: req.requester_id,
+        receiver_id: req.receiver_id,
+        status: req.status,
+        created_at: req.created_at,
+        requester: {
+          id: req.profiles?.id,
+          name: req.profiles?.full_name || 'Unknown',
+          avatar_url: req.profiles?.avatar_url,
+          city: req.profiles?.city
+        }
+      }));
+
+      console.log('Pending connection requests fetched:', formattedRequests);
+      return formattedRequests;
+    } catch (error) {
+      console.error('Failed to fetch pending connection requests:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Accept a connection request
+   */
+  async acceptConnectionRequest(connectionId) {
+    try {
+      console.log(`Accepting connection request ${connectionId}...`);
+
+      const result = await this.patch(
+        `/connections?id=eq.${encodeURIComponent(connectionId)}`,
+        { status: 'accepted' },
+        {
+          headers: {
+            'Prefer': 'return=representation'
+          }
+        }
+      );
+
+      const connection = Array.isArray(result) ? result[0] : result;
+      console.log('Connection request accepted:', connection);
+      return connection;
+    } catch (error) {
+      console.error(`Failed to accept connection request ${connectionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Reject a connection request
+   */
+  async rejectConnectionRequest(connectionId) {
+    try {
+      console.log(`Rejecting connection request ${connectionId}...`);
+
+      const result = await this.patch(
+        `/connections?id=eq.${encodeURIComponent(connectionId)}`,
+        { status: 'rejected' },
+        {
+          headers: {
+            'Prefer': 'return=representation'
+          }
+        }
+      );
+
+      const connection = Array.isArray(result) ? result[0] : result;
+      console.log('Connection request rejected:', connection);
+      return connection;
+    } catch (error) {
+      console.error(`Failed to reject connection request ${connectionId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check connection status between two users
+   */
+  async getConnectionStatus(userId1, userId2) {
+    try {
+      console.log(`Checking connection status between ${userId1} and ${userId2}...`);
+
+      // Check for connection in either direction
+      const connections = await this.get(
+        `/connections?or=(and(requester_id.eq.${encodeURIComponent(userId1)},receiver_id.eq.${encodeURIComponent(userId2)}),and(requester_id.eq.${encodeURIComponent(userId2)},receiver_id.eq.${encodeURIComponent(userId1)}))&select=id,requester_id,receiver_id,status`
+      );
+
+      if (!connections || connections.length === 0) {
+        console.log('No connection found between users');
+        return null;
+      }
+
+      const connection = connections[0];
+      console.log('Connection status:', connection.status);
+      return {
+        id: connection.id,
+        status: connection.status,
+        isInitiatedByUser1: connection.requester_id === userId1
+      };
+    } catch (error) {
+      console.error('Failed to check connection status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get count of accepted connections for a user
+   */
+  async getAcceptedConnectionsCount(userId) {
+    try {
+      console.log(`Fetching accepted connections count for user ${userId}...`);
+
+      // Count connections that are accepted (in either direction)
+      const connections = await this.get(
+        `/connections?or=(and(requester_id.eq.${encodeURIComponent(userId)},status.eq.accepted),and(receiver_id.eq.${encodeURIComponent(userId)},status.eq.accepted))&select=id`
+      );
+
+      const count = connections ? connections.length : 0;
+      console.log(`Accepted connections count for user ${userId}:`, count);
+      return count;
+    } catch (error) {
+      console.error(`Failed to fetch accepted connections count for user ${userId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all accepted connections for a user with profile details
+   */
+  async getAcceptedConnections(userId) {
+    try {
+      console.log(`Fetching accepted connections for user ${userId}...`);
+
+      // Get all accepted connections where user is either requester or receiver
+      // Join with profiles to get the other user's information
+      const connections = await this.get(
+        `/connections?or=(and(requester_id.eq.${encodeURIComponent(userId)},status.eq.accepted),and(receiver_id.eq.${encodeURIComponent(userId)},status.eq.accepted))&select=id,requester_id,receiver_id,created_at,profiles!requester_id(id,full_name,avatar_url,city),profiles_receiver:profiles!receiver_id(id,full_name,avatar_url,city)&order=created_at.desc`
+      );
+
+      if (!connections || connections.length === 0) {
+        console.log('No accepted connections found');
+        return [];
+      }
+
+      // Extract the connected users (the ones that are NOT the current user)
+      // Use a Set to track seen users and avoid duplicates
+      const seenUsers = new Set();
+      const formattedConnections = [];
+
+      for (const conn of connections) {
+        const isRequester = conn.requester_id === userId;
+        const otherUser = isRequester ? conn.profiles_receiver : conn.profiles;
+        
+        // Skip if we've already added this user
+        if (seenUsers.has(otherUser.id)) {
+          console.log(`Skipping duplicate connection with ${otherUser.id}`);
+          continue;
+        }
+
+        seenUsers.add(otherUser.id);
+        formattedConnections.push({
+          id: conn.id,
+          connection_id: conn.id,
+          connected_user_id: otherUser.id,
+          name: otherUser.full_name || 'Unknown',
+          avatar_url: otherUser.avatar_url,
+          city: otherUser.city || 'Location unknown',
+          connected_at: conn.created_at
+        });
+      }
+
+      console.log('Accepted connections fetched (deduplicated):', formattedConnections);
+      return formattedConnections;
+    } catch (error) {
+      console.error(`Failed to fetch accepted connections for user ${userId}:`, error);
+      throw error;
+    }
+  }
 }
 
 export const apiService = new APIService();

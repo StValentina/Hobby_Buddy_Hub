@@ -1,0 +1,96 @@
+/**
+ * My Connections Page Styles
+ */
+
+.my-connections-main {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: calc(100vh - 100px);
+}
+
+.connection-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.connection-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.connection-avatar {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.avatar-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f0f0f0;
+}
+
+.avatar-placeholder {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #667eea99 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2.5rem;
+    border: 3px solid #f0f0f0;
+}
+
+.connection-info h5 {
+    font-size: 1.25rem;
+    margin-top: 1rem;
+}
+
+.connection-info h5 a:hover {
+    color: #007bff !important;
+    text-decoration: underline !important;
+}
+
+.connection-details {
+    margin: 1rem 0;
+}
+
+.connection-details p {
+    margin-bottom: 0.5rem !important;
+}
+
+.connection-details i {
+    color: #667eea;
+    margin-right: 0.5rem;
+}
+
+/* Empty state */
+.connection-card.empty {
+    border: 2px dashed #dee2e6;
+    background-color: #f8f9fa;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .connection-card {
+        padding: 1.5rem;
+    }
+    
+    .avatar-image,
+    .avatar-placeholder {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+    }
+    
+    .connection-info h5 {
+        font-size: 1.1rem;
+    }
+}

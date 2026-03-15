@@ -68,6 +68,16 @@ export class Header {
 
     const authHtml = `
         ${adminNavHtml}
+        <li class="nav-item">
+          <a class="nav-link" href="/my-connections">
+            <i class="bi bi-people me-1"></i>My Connections
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" id="connectionRequestsLink" onclick="showConnectionRequests(event)">
+            <i class="bi bi-inbox me-1"></i>Connection Requests <span class="badge bg-danger" id="connectionRequestsBadge" style="display: none;"></span>
+          </a>
+        </li>
         <li class="nav-item dropdown">
           <a 
             class="nav-link dropdown-toggle" 
@@ -176,6 +186,11 @@ export class Header {
     `;
     // Ensure Bootstrap dropdown functionality is initialized
     this.initializeDropdowns();
+    
+    // Update connection requests badge for authenticated users
+    if (isAuthenticated && window.updateConnectionRequestsBadge) {
+      window.updateConnectionRequestsBadge();
+    }
   }
 
   initializeDropdowns() {

@@ -32,13 +32,14 @@ async function loadDashboardData() {
             return;
         }
         
-        // Load all data in parallel (including role lookup)
-        const [roleResult, hobbiesResult, eventsJoinedResult, upcomingEventsResult, hostedEventsResult] = await Promise.allSettled([
+        // Load all data in parallel (including role lookup and connections count)
+        const [roleResult, hobbiesResult, eventsJoinedResult, upcomingEventsResult, hostedEventsResult, connectionsCountResult] = await Promise.allSettled([
             apiService.getUserRole(currentUser.id),
             apiService.getUserHobbies(currentUser.id),
             apiService.getEventsJoinedCount(currentUser.id),
             apiService.getUpcomingEvents(currentUser.id),
-            apiService.getEventsHostedByUser(currentUser.id)
+            apiService.getEventsHostedByUser(currentUser.id),
+            apiService.getAcceptedConnectionsCount(currentUser.id)
         ]);
 
         const userRole = roleResult.status === 'fulfilled' ? roleResult.value : null;
@@ -53,12 +54,13 @@ async function loadDashboardData() {
         const eventsJoinedCount = eventsJoinedResult.status === 'fulfilled' ? eventsJoinedResult.value : 0;
         const upcomingEvents = upcomingEventsResult.status === 'fulfilled' ? upcomingEventsResult.value : [];
         const hostedEvents = hostedEventsResult.status === 'fulfilled' ? hostedEventsResult.value : [];
+        const connectionsCount = connectionsCountResult.status === 'fulfilled' ? connectionsCountResult.value : 0;
         
         // Update stats
         document.getElementById('dashboardHobbiesCount').textContent = userHobbies.length;
         document.getElementById('dashboardEventsJoinedCount').textContent = eventsJoinedCount;
         document.getElementById('dashboardMyEventsCount').textContent = hostedEvents.length;
-        document.getElementById('dashboardConnectionsCount').textContent = '0'; // TODO: fetch connections count
+        document.getElementById('dashboardConnectionsCount').textContent = connectionsCount;
         
         // Display upcoming events and hosted events combined
         const combinedEvents = [...upcomingEvents, ...hostedEvents];

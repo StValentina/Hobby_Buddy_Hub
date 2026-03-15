@@ -242,8 +242,9 @@ function setupEventListeners() {
     const changeAvatarBtn = document.getElementById('changeAvatarBtn');
     const saveHobbiesBtn = document.getElementById('saveHobbiesBtn');
     const cancelHobbiesBtn = document.getElementById('cancelHobbiesBtn');
+    const connectBtn = document.getElementById('connectBtn');
 
-    // Hide edit controls if viewing another profile
+    // Handle viewing another profile
     if (isViewingOtherProfile) {
         editProfileBtn.style.display = 'none';
         changeAvatarBtn.style.display = 'none';
@@ -252,6 +253,15 @@ function setupEventListeners() {
         const dangerZone = document.querySelector('.danger-zone');
         if (dangerZone) {
             dangerZone.style.display = 'none';
+        }
+        
+        // Show and setup connect button
+        if (connectBtn && userProfile) {
+            connectBtn.style.display = 'block';
+            const connectBtnText = document.getElementById('connectBtnText');
+            
+            // Check connection status
+            checkAndUpdateConnectionButton(connectBtn, connectBtnText);
         }
         return;
     }
@@ -508,6 +518,107 @@ async function saveProfileChanges() {
     } catch (error) {
         console.error('Failed to save profile changes:', error.message);
         showErrorMessage(`Failed to save changes: ${error.message}`);
+    }
+}
+
+/**
+ * Check and update connection button based on connection status
+ */
+async function checkAndUpdateConnectionButton(connectBtn, connectBtnText) {
+    try {
+        const currentUser = apiService.getCurrentUser();
+        if (!currentUser || !viewedUserId) {
+            return;
+        }
+
+        // Check connection status between current user and viewed user
+        const connectionStatus = await apiService.getConnectionStatus(currentUser.id, viewedUserId);
+        
+        if (!connectionStatus) {
+            // No connection exists, show "Connect with" button
+            connectBtnText.textContent = `Connect with ${userProfile.full_name || 'user'}`;
+            connectBtn.classList.remove('btn-secondary');
+            connectBtn.classList.add('btn-success');
+            connectBtn.disabled = false;
+            connectBtn.addEventListener('click', handleConnectRequest);
+        } else if (connectionStatus.status === 'pending') {
+            // Connection is pending
+            connectBtnText.textContent = 'Pending';
+            connectBtn.classList.remove('btn-success');
+            connectBtn.classList.add('btn-secondary');
+            connectBtn.disabled = true;
+        } else if (connectionStatus.status === 'accepted') {
+            // Connection is accepted
+            connectBtnText.textContent = 'Connected';
+            connectBtn.classList.remove('btn-success');
+            connectBtn.classList.add('btn-secondary');
+            connectBtn.disabled = true;
+        } else {
+            // Other status (rejected, blocked, etc.)
+            connectBtn.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Failed to check connection status:', error);
+        // Show connect button by default if check fails
+        connectBtnText.textContent = `Connect with ${userProfile.full_name || 'user'}`;
+        connectBtn.classList.remove('btn-secondary');
+        connectBtn.classList.add('btn-success');
+        connectBtn.disabled = false;
+        connectBtn.addEventListener('click', handleConnectRequest);
+    }
+}
+
+/**
+ * Handle connect request button click
+ */
+async function handleConnectRequest() {
+    try {
+        const connectBtn = document.getElementById('connectBtn');
+        if (!connectBtn || !viewedUserId) {
+            showErrorMessage('Invalid connection request');
+            return;
+        }
+
+        // Disable button during request
+        connectBtn.disabled = true;
+        const buttonText = document.getElementById('connectBtnText');
+        const originalText = buttonText.textContent;
+        buttonText.textContent = 'Sending...';
+
+        // Send connection request
+        const connection = await apiService.sendConnectionRequest(viewedUserId);
+        
+        console.log('Connection request created:', connection);
+        showSuccessMessage(`Connection request sent to ${userProfile.full_name}!`);
+        
+        // Update button to show pending status
+        connectBtn.disabled = true;
+        connectBtn.classList.remove('btn-success');
+        connectBtn.classList.add('btn-secondary');
+        buttonText.textContent = 'Pending';
+    } catch (error) {
+        console.error('Failed to send connection request:', error);
+        
+        // Handle specific error cases
+        if (error.message.includes('Cannot send connection request to yourself')) {
+            showErrorMessage('You cannot connect with yourself');
+        } else if (error.message.includes('Connection already exists')) {
+            showErrorMessage('A connection already exists with this user');
+        } else if (error.message.includes('duplicate')) {
+            showErrorMessage('Connection request already exists');
+        } else {
+            showErrorMessage(`Failed to send connection request: ${error.message}`);
+        }
+        
+        // Re-enable button
+        const connectBtn = document.getElementById('connectBtn');
+        if (connectBtn) {
+            connectBtn.disabled = false;
+            const buttonText = document.getElementById('connectBtnText');
+            if (buttonText) {
+                buttonText.textContent = `Connect with ${userProfile.full_name || 'user'}`;
+            }
+        }
     }
 }
 
