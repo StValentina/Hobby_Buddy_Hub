@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 
 function logicalRouteRewritePlugin() {
   return {
@@ -52,14 +53,40 @@ function logicalRouteRewritePlugin() {
           return;
         }
 
+        const peopleMatch = pathname.match(/^\/people\/([^/]+)$/);
+        if (peopleMatch) {
+          const id = encodeURIComponent(peopleMatch[1]);
+          req.url = `/pages/profile.html?viewUserId=${id}`;
+          next();
+          return;
+        }
+
         next();
       });
     },
   };
 }
 
+function copyNetlifyRedirectsPlugin() {
+  return {
+    name: 'copy-netlify-redirects',
+    closeBundle() {
+      const sourcePath = resolve(__dirname, 'public/_redirects');
+      const targetPath = resolve(__dirname, 'dist/_redirects');
+
+      if (!existsSync(sourcePath)) {
+        return;
+      }
+
+      const redirectsContent = readFileSync(sourcePath, 'utf8');
+      writeFileSync(targetPath, redirectsContent, 'utf8');
+      console.log('Copied public/_redirects -> dist/_redirects');
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [logicalRouteRewritePlugin()],
+  plugins: [logicalRouteRewritePlugin(), copyNetlifyRedirectsPlugin()],
   server: {
     port: 5173,
     open: true,

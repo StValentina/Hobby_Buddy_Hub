@@ -13,6 +13,11 @@ let viewedUserId = null; // ID of the user being viewed
 
 // Get user ID from URL parameters
 function getViewedUserIdFromURL() {
+    const pathMatch = window.location.pathname.match(/^\/people\/([^/]+)$/);
+    if (pathMatch) {
+        return decodeURIComponent(pathMatch[1]);
+    }
+
     const params = new URLSearchParams(window.location.search);
     return params.get('viewUserId');
 }

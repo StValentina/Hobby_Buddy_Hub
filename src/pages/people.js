@@ -220,7 +220,7 @@ function renderPeople(people) {
                         <p class="person-bio">${person.bio}</p>
                     </div>
                     <div class="person-card-footer">
-                        <a href="/profile?viewUserId=${person.id}" class="btn btn-view-profile">
+                        <a href="/people/${person.id}" class="btn btn-view-profile">
                             <i class="bi bi-eye me-2"></i>View Profile
                         </a>
                     </div>

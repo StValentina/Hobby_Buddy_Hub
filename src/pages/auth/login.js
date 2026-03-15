@@ -1,19 +1,87 @@
 import { apiService } from '/src/services/api.js';
 
+let form;
+let emailInput;
+let passwordInput;
+let submitBtn;
+let spinner;
+let alertContainer;
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
-    window.setActiveNav('Login');
-    
+    if (typeof window.setActiveNav === 'function') {
+        window.setActiveNav('Login');
+    }
+    bindFormElements();
+    bindFormHandlers();
+
     // Check if user is already logged in and redirect if they are
     checkExistingSession();
 });
 
-const form = document.getElementById('loginForm');
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
-const submitBtn = document.getElementById('submitBtn');
-const spinner = document.getElementById('spinner');
-const alertContainer = document.getElementById('alertContainer');
+function bindFormElements() {
+    form = document.getElementById('loginForm');
+    emailInput = document.getElementById('email');
+    passwordInput = document.getElementById('password');
+    submitBtn = document.getElementById('submitBtn');
+    spinner = document.getElementById('spinner');
+    alertContainer = document.getElementById('alertContainer');
+}
+
+function bindFormHandlers() {
+    if (!form) {
+        console.error('Login form not found in DOM.');
+        return;
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        clearAlert();
+        
+        // Validate form
+        if (!validateForm()) {
+            return;
+        }
+        
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+        
+        try {
+            setLoading(true);
+            
+            // Attempt login
+            const response = await apiService.login(email, password);
+            
+            console.log('Login successful:', response);
+            
+            showAlert('Login successful! Redirecting...', 'success');
+            
+            // Redirect to dashboard after login to verify authenticated state immediately.
+            setTimeout(() => {
+                window.location.replace('/dashboard');
+            }, 1500);
+            
+        } catch (error) {
+            console.error('Login failed:', error);
+            
+            let errorMessage = 'Login failed. Please try again.';
+            
+            // Check if error message contains specific auth errors
+            if (error.message.includes('Invalid login credentials')) {
+                errorMessage = 'Invalid email or password';
+            } else if (error.message.includes('User not found')) {
+                errorMessage = 'No account found with this email address';
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            showAlert(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    });
+}
 
 /**
  * Show alert message
@@ -44,6 +112,10 @@ function clearAlert() {
  * Set loading state
  */
 function setLoading(isLoading) {
+    if (!submitBtn || !spinner) {
+        return;
+    }
+
     submitBtn.disabled = isLoading;
     spinner.style.display = isLoading ? 'inline-block' : 'none';
     submitBtn.textContent = isLoading ? ' Signing in...' : 'Sign In';
@@ -90,57 +162,6 @@ function validateForm() {
     
     return true;
 }
-
-/**
- * Handle form submission
- */
-form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    clearAlert();
-    
-    // Validate form
-    if (!validateForm()) {
-        return;
-    }
-    
-    const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
-    
-    try {
-        setLoading(true);
-        
-        // Attempt login
-        const response = await apiService.login(email, password);
-        
-        console.log('Login successful:', response);
-        
-        showAlert('Login successful! Redirecting...', 'success');
-        
-        // Redirect to dashboard after login to verify authenticated state immediately.
-        setTimeout(() => {
-            window.location.replace('/dashboard');
-        }, 1500);
-        
-    } catch (error) {
-        console.error('Login failed:', error);
-        
-        let errorMessage = 'Login failed. Please try again.';
-        
-        // Check if error message contains specific auth errors
-        if (error.message.includes('Invalid login credentials')) {
-            errorMessage = 'Invalid email or password';
-        } else if (error.message.includes('User not found')) {
-            errorMessage = 'No account found with this email address';
-        } else if (error.message) {
-            errorMessage = error.message;
-        }
-        
-        showAlert(errorMessage);
-    } finally {
-        setLoading(false);
-    }
-});
 
 /**
  * Check if user is already logged in

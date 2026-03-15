@@ -2,6 +2,7 @@
  * API service for Supabase integration
  */
 
+import { createClient } from '@supabase/supabase-js';
 import ENV from '../config.js';
 
 class APIService {
@@ -9,6 +10,17 @@ class APIService {
     this.baseURL = ENV.SUPABASE_URL;
     this.apiKey = ENV.SUPABASE_KEY;
     this.authToken = this.getAuthToken();
+    this.supabase = null;
+
+    if (this.baseURL && this.apiKey) {
+      this.supabase = createClient(this.baseURL, this.apiKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: false,
+        },
+      });
+    }
 
     if (!this.baseURL || !this.apiKey) {
       console.error('Supabase configuration is missing. Check VITE_SUPABASE_URL and VITE_SUPABASE_KEY/VITE_SUPABASE_ANON_KEY.');
@@ -263,14 +275,42 @@ class APIService {
   async getHobbyById(hobbyId) {
     try {
       console.log(`Fetching hobby ${hobbyId} from Supabase...`);
+
+      this.ensureConfigured();
+      if (!this.supabase) {
+        throw new Error('Supabase client is not initialized.');
+      }
       
       // Fetch hobby and related data in parallel
-      const [hobbies, hobbyTags, hobbyEvents, hobbyUsers] = await Promise.all([
-        this.get(`/hobbies?id=eq.${hobbyId}&select=id,name,description,image_url`),
-        this.get(`/hobby_tags?hobby_id=eq.${hobbyId}&select=tags(id,name)`),
-        this.get(`/events?hobby_id=eq.${hobbyId}&select=id,title,event_date,location_id,locations(address,city)`),
-        this.get(`/user_hobbies?hobby_id=eq.${hobbyId}&select=profiles(id,full_name,city)`)
+      const [hobbyResult, hobbyTagsResult, hobbyEventsResult, hobbyUsersResult] = await Promise.all([
+        this.supabase
+          .from('hobbies')
+          .select('id,name,description,image_url')
+          .eq('id', hobbyId)
+          .limit(1),
+        this.supabase
+          .from('hobby_tags')
+          .select('tags(id,name)')
+          .eq('hobby_id', hobbyId),
+        this.supabase
+          .from('events')
+          .select('id,title,event_date,location_id,locations(address,city)')
+          .eq('hobby_id', hobbyId),
+        this.supabase
+          .from('user_hobbies')
+          .select('profiles(id,full_name,city)')
+          .eq('hobby_id', hobbyId)
       ]);
+
+      if (hobbyResult.error) throw hobbyResult.error;
+      if (hobbyTagsResult.error) throw hobbyTagsResult.error;
+      if (hobbyEventsResult.error) throw hobbyEventsResult.error;
+      if (hobbyUsersResult.error) throw hobbyUsersResult.error;
+
+      const hobbies = hobbyResult.data || [];
+      const hobbyTags = hobbyTagsResult.data || [];
+      const hobbyEvents = hobbyEventsResult.data || [];
+      const hobbyUsers = hobbyUsersResult.data || [];
       
       if (!hobbies || hobbies.length === 0) {
         console.warn(`Hobby ${hobbyId} not found`);
@@ -574,30 +614,24 @@ class APIService {
     try {
       this.ensureConfigured();
       console.log('Logging in user:', email);
-      
-      const response = await fetch(`${this.baseURL}/auth/v1/token?grant_type=password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': this.apiKey,
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.msg || error.error_description || error.message || 'Login failed');
+      if (!this.supabase) {
+        throw new Error('Supabase client is not initialized.');
       }
 
-      const data = await response.json();
+      const { data, error } = await this.supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Login failed');
+      }
+
       console.log('User logged in successfully');
       
       // Store auth token
-      if (data.access_token) {
-        this.setAuthToken(data.access_token);
+      if (data?.session?.access_token) {
+        this.setAuthToken(data.session.access_token);
       }
       
       return data;
@@ -708,8 +742,21 @@ class APIService {
   async getProfile(userId) {
     try {
       console.log(`Fetching profile for user ${userId}...`);
-      
-      const profiles = await this.get(`/profiles?id=eq.${encodeURIComponent(userId)}&select=*`);
+
+      this.ensureConfigured();
+      if (!this.supabase) {
+        throw new Error('Supabase client is not initialized.');
+      }
+
+      const { data: profiles, error } = await this.supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .limit(1);
+
+      if (error) {
+        throw error;
+      }
       
       if (!profiles || profiles.length === 0) {
         console.warn(`Profile not found for user ${userId}`);
@@ -1639,10 +1686,21 @@ class APIService {
   async getEventById(eventId) {
     try {
       console.log(`Fetching event ${eventId}...`);
-      
-      const events = await this.get(
-        `/events?id=eq.${encodeURIComponent(eventId)}&select=id,title,description,event_date,max_participants,hobbies(id,name),locations(id,city,address),profiles(id,full_name),event_participants(profile_id,profiles(full_name))`
-      );
+
+      this.ensureConfigured();
+      if (!this.supabase) {
+        throw new Error('Supabase client is not initialized.');
+      }
+
+      const { data: events, error } = await this.supabase
+        .from('events')
+        .select('id,title,description,event_date,max_participants,hobbies(id,name),locations(id,city,address),profiles(id,full_name),event_participants(profile_id,profiles(full_name))')
+        .eq('id', eventId)
+        .limit(1);
+
+      if (error) {
+        throw error;
+      }
       
       if (!events || events.length === 0) {
         console.warn(`Event ${eventId} not found`);

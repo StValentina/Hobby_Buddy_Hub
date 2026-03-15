@@ -1,1 +1,19 @@
-/*                           /index.html                    200
+/                   /index.html                  200
+/login              /pages/auth/login.html       200
+/register           /pages/auth/register.html    200
+/dashboard          /pages/dashboard.html        200
+
+/events             /pages/events.html           200
+/events/*           /pages/event-details.html    200
+
+/hobbies            /pages/hobbies.html          200
+/hobbies/*          /pages/hobby-details.html    200
+
+/people             /pages/people.html           200
+/people/*           /pages/profile.html          200
+
+/profile            /pages/profile.html          200
+/my-connections     /pages/my-connections.html   200
+/create-event       /pages/create-event.html     200
+/admin              /pages/admin.html            200
+/auth/diagnostics   /pages/auth/diagnostics.html 200

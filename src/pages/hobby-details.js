@@ -190,10 +190,6 @@ const hobbiesDatabase = [
 
 // Get hobby ID from URL
 function getHobbyIdFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    const queryId = params.get('id');
-    if (queryId) return queryId;
-
     const pathMatch = window.location.pathname.match(/^\/hobbies\/([^/]+)$/);
     return pathMatch ? decodeURIComponent(pathMatch[1]) : null;
 }

@@ -42,6 +42,7 @@ class AppRouter {
     this.registerRoute('/dashboard', '/pages/dashboard.html');
     this.registerRoute('/hobbies/:id', '/pages/hobby-details.html');
     this.registerRoute('/events/:id', '/pages/event-details.html');
+    this.registerRoute('/people/:id', '/pages/profile.html');
   }
 
   /**
@@ -94,6 +95,14 @@ class AppRouter {
       return {
         filePath: this.routes.get('/hobbies/:id'),
         query: `?id=${encodeURIComponent(hobbyMatch[1])}`
+      };
+    }
+
+    const peopleMatch = pathname.match(/^\/people\/([^/]+)$/);
+    if (peopleMatch) {
+      return {
+        filePath: this.routes.get('/people/:id'),
+        query: `?viewUserId=${encodeURIComponent(peopleMatch[1])}`
       };
     }
 
@@ -180,12 +189,24 @@ class AppRouter {
           document.head.appendChild(newLink);
         });
 
+      // Extract main content from page (skip header/footer)
+      const mainContent = pageDoc.querySelector('main') || pageDoc.body;
+      
+      // Replace only the main content area (not header/footer)
+      const appContainer = document.querySelector('#app') || document.querySelector('main');
+      if (appContainer) {
+        appContainer.innerHTML = mainContent.innerHTML;
+      } else {
+        // Fallback: replace body if no app container found
+        document.body.innerHTML = pageDoc.body.innerHTML;
+      }
+
       // Remove previously injected page scripts from old route.
       document
         .querySelectorAll('script[data-router-page-script="true"]')
         .forEach((script) => script.remove());
 
-      // Inject page scripts from fetched document (head + body) so route logic executes.
+      // Inject page scripts from fetched document (head + body) after HTML render.
       pageDoc
         .querySelectorAll('script[src]')
         .forEach((script) => {
@@ -208,18 +229,6 @@ class AppRouter {
 
           document.body.appendChild(newScript);
         });
-
-      // Extract main content from page (skip header/footer)
-      const mainContent = pageDoc.querySelector('main') || pageDoc.body;
-      
-      // Replace only the main content area (not header/footer)
-      const appContainer = document.querySelector('#app') || document.querySelector('main');
-      if (appContainer) {
-        appContainer.innerHTML = mainContent.innerHTML;
-      } else {
-        // Fallback: replace body if no app container found
-        document.body.innerHTML = pageDoc.body.innerHTML;
-      }
 
       // Inline scripts inserted with innerHTML are inert; recreate them so they execute.
       const scripts = Array.from(document.querySelectorAll('main script, #app script'));
