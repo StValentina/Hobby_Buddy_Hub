@@ -9,8 +9,7 @@ let submitBtn;
 let spinner;
 let alertContainer;
 
-// Initialize page
-document.addEventListener('DOMContentLoaded', () => {
+function initLoginPage() {
     console.log('DOMContentLoaded fired');
 
     if (typeof window.setActiveNav === 'function') {
@@ -21,7 +20,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Check if user is already logged in and redirect if they are
     checkExistingSession();
-});
+}
+
+// Initialize page in both MPA and SPA script-injection flows.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLoginPage, { once: true });
+} else {
+    initLoginPage();
+}
 
 function bindFormElements() {
     form = document.getElementById('loginForm');
@@ -37,6 +43,10 @@ function bindFormElements() {
 function bindFormHandlers() {
     if (!form) {
         console.error('Login form not found in DOM.');
+        return;
+    }
+
+    if (form.dataset.handlerBound === 'true') {
         return;
     }
 
@@ -95,6 +105,8 @@ function bindFormHandlers() {
             setLoading(false);
         }
     });
+
+    form.dataset.handlerBound = 'true';
 }
 
 /**
