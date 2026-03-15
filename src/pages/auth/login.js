@@ -1,5 +1,7 @@
 import { apiService } from '/src/services/api.js';
 
+console.log('LOGIN JS LOADED');
+
 let form;
 let emailInput;
 let passwordInput;
@@ -9,6 +11,8 @@ let alertContainer;
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOMContentLoaded fired');
+
     if (typeof window.setActiveNav === 'function') {
         window.setActiveNav('Login');
     }
@@ -21,6 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function bindFormElements() {
     form = document.getElementById('loginForm');
+    console.log('Form found:', Boolean(form));
+
     emailInput = document.getElementById('email');
     passwordInput = document.getElementById('password');
     submitBtn = document.getElementById('submitBtn');
@@ -34,7 +40,15 @@ function bindFormHandlers() {
         return;
     }
 
+    // Guard against accidental native browser form submission.
+    form.onsubmit = (e) => {
+        e.preventDefault();
+    };
+
+    console.log('Binding submit handler');
+
     form.addEventListener('submit', async (e) => {
+        console.log('SUBMIT HANDLER TRIGGERED');
         e.preventDefault();
         
         clearAlert();
