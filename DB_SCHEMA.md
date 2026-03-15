@@ -11,7 +11,7 @@ The schema is designed to support:
 - hobbies
 - hobby events
 - event participation
-- activity locations
+- activity locations *(not yet developed)*
 - role-based permissions
 - file uploads
 - tags for hobbies
@@ -39,10 +39,11 @@ Main entities:
 - tags
 - user_hobbies
 - hobby_tags
-- locations
+- locations *(not yet developed)*
 - events
 - event_tags
 - event_participants
+- connections
 
 ---
 
@@ -58,6 +59,7 @@ Extends the Supabase `auth.users` table with application-specific profile data.
 
 - `id` – UUID, primary key, references `auth.users(id)`
 - `full_name` – text, required
+- `email` – text, optional (synced from auth.users during signup)
 - `bio` – text, optional
 - `avatar_url` – text, optional
 - `city` – text, optional
@@ -67,7 +69,10 @@ Extends the Supabase `auth.users` table with application-specific profile data.
 ### Notes
 
 - One profile per authenticated user
-- A profile is created automatically after registration
+- A profile is created automatically after registration via trigger
+- Email is populated from Supabase Auth and kept in sync
+- Avatar URL points to files in Supabase Storage (avatars bucket)
+- Profile data is used for display across the application
 
 ---
 
@@ -227,7 +232,7 @@ Stores which tags describe a hobby.
 
 ---
 
-## 7. locations
+## 7. locations *(not yet developed)*
 
 Stores locations where hobby activities can happen.
 
@@ -352,6 +357,43 @@ Tracks which users joined which events.
 
 ---
 
+## 11. connections
+
+Tracks user connections and friend requests.
+
+### Purpose
+
+Enables users to connect with each other and manage friendship relationships.
+
+### Fields
+
+- `id` – UUID, primary key, default generated
+- `requester_id` – UUID, required, references `profiles(id)`
+- `receiver_id` – UUID, required, references `profiles(id)`
+- `status` – text, required, default: `'pending'`
+- `created_at` – timestamp, default now()
+
+### Allowed Status Values
+
+- `pending` – Connection request sent, awaiting response
+- `accepted` – Connection request accepted, users are connected
+- `rejected` – Connection request rejected
+- `blocked` – User blocked the other user
+
+### Constraints
+
+- Foreign keys ensure referential integrity
+- `requester_id` must be different from `receiver_id` (cannot connect to self)
+- Unique pair: (`requester_id`, `receiver_id`) prevents duplicate requests in same direction
+
+### Notes
+
+- Tracks one-directional request and response flow
+- Users can view connections they initiated or received
+- Users can accept/reject/block connections
+- Deleted connections cascade from profiles (when user deletes account)
+- Indexed on requester_id, receiver_id, and status for efficient queries
+
 ## Relationships Summary
 
 ### One-to-One
@@ -370,6 +412,7 @@ Tracks which users joined which events.
 - `hobbies` ↔ `tags` through `hobby_tags`
 - `events` ↔ `tags` through `event_tags`
 - `profiles` ↔ `events` through `event_participants`
+- `profiles` ↔ `profiles` through `connections` (self-referential for user relationships)
 
 ---
 
@@ -399,14 +442,29 @@ Use Supabase Storage for:
 
 ### `avatars`
 Stores user profile images
+- File naming: `{user_id}/{filename}`
+- Public read access enabled
+- Upload URL stored in profiles.avatar_url
 
-### `event-images`
-Stores event cover images
+### `hobbies`
+Stores hobby category cover images
+- File naming: `{hobby_id}/{filename}`
+- Public read access enabled
+- Upload URL stored in hobbies.image_url
 
 Optional future bucket:
 
-### `location-images`
+### `locations`
 Stores images for hobby locations
+- File naming: `{location_id}/{filename}`
+- Public read access enabled
+- Upload URL stored in locations.image_url
+
+### `events`
+Stores event cover/banner images
+- File naming: `{event_id}/{filename}`
+- Public read access enabled
+- Upload URL stored in events.image_url
 
 ---
 
@@ -431,6 +489,9 @@ Authenticated users can:
 - update their own profile
 - manage their own user hobbies
 - join and leave events
+- create connection requests to other users
+- accept/reject/block connection requests
+- view their own connections and pending requests
 
 ### Host Access
 
@@ -489,7 +550,7 @@ Admins can:
 - everyone can read
 - only admins can insert, update, delete
 
-### locations
+### locations *(not yet developed)*
 
 - everyone can read
 - only admins or hosts can create
@@ -512,6 +573,13 @@ Admins can:
 - users can remove only their own participation
 - hosts can read participants for their events
 - admins can read/manage all
+
+### connections
+
+- users can view their own connections (as requester or receiver)
+- users can create connection requests (as requester)
+- users can update received connection requests (as receiver)
+- users can delete their own connections (as requester or receiver)
 
 ---
 
@@ -592,10 +660,28 @@ Admins can:
 2. Clicks Join
 3. App inserts row into `event_participants`
 
+### Send connection request
+
+1. User opens another user's profile
+2. Clicks "Send Connection Request" or "Add as Connection"
+3. App inserts row into `connections` with status `'pending'`
+4. Requester can view their sent requests
+5. Receiver is notified of connection request
+
+### Accept/Reject connection
+
+1. User opens "Connection Requests" or similar page
+2. Views pending connection requests
+3. Clicks Accept or Reject on a request
+4. App updates `connections` row with status `'accepted'` or `'rejected'`
+5. Connection status is reflected in user interface
+
 ### View profile
 
 1. App fetches `profiles`
 2. App fetches related hobbies and events
+3. App checks connection status via `connections` table
+4. Displays connection status button if applicable
 
 ---
 
@@ -604,14 +690,42 @@ Admins can:
 ### ✅ Completed
 
 - SQL schema fully designed with all tables, relationships, and constraints
-- 5 migration files created in `supabase/migrations/`:
+- 22 migration files created and applied in `supabase/migrations/`:
   - `001_enums_and_base_tables.sql` – Enums, profiles, user_roles, hobbies, tags
   - `002_junction_and_relationship_tables.sql` – user_hobbies, hobby_tags, locations, events, event_tags, event_participants
   - `003_auth_triggers.sql` – Auto-create profiles on signup, auto-assign default roles, update timestamps
   - `004_rls_policies.sql` – Fine-grained row-level security for all tables
   - `005_seed_data.sql` – Initial hobbies (15), tags (20), and locations (10) with relationships
-- Migration runner script created (`scripts/migrate.js`)
-- npm script added: `npm run db:setup`
+  - `006_fix_public_access.sql` – Public read policies for hobbies, tags, locations, events
+  - `007_add_public_read_policies.sql` – Additional public read policies
+  - `008_delete_hobbies.sql` – Fix hobby deletion to properly cascade
+  - `009_add_email_to_profiles.sql` – Add email field to profiles table
+  - `010_fix_email_unique_constraint.sql` – Make email field properly unique
+  - `011_ensure_trigger_handles_email.sql` – Ensure profile trigger populates email
+  - `012_verify_and_fix_rls.sql` – Verify and fix RLS policies
+  - `013_setup_storage_bucket.sql` – Setup avatars bucket for Supabase Storage
+  - `014_ensure_avatars_bucket_exists.sql` – Ensure avatars bucket is properly configured
+  - `015_fix_ambiguous_user_id_helpers.sql` – Fix ambiguous user_id references in functions
+  - `016_fix_events_rls_for_own_records.sql` – Fix RLS for event ownership queries
+  - `017_align_roles_and_access_policies.sql` – Align roles with RLS policies
+  - `018_enable_event_tags_insert_delete.sql` – Enable insert/delete for event tags
+  - `019_fix_user_roles_admin_update.sql` – Fix admin permissions for user_roles
+  - `020_ensure_hobbies_bucket_exists.sql` – Setup hobbies bucket for Supabase Storage
+  - `021_create_connections_table.sql` – Create connections table for user-to-user relationships
+  - `022_fix_tags_admin_update_permissions.sql` – Fix admin permissions for tag updates
+
+### Database Features Implemented
+
+- **Authentication**: Supabase Auth with automatic profile creation
+- **User Profiles**: Full user profile management with avatar support
+- **Role-Based Access Control**: Three roles (seeker, host, admin) with RLS enforcement
+- **Hobby Management**: Browse and manage user hobbies with tag categorization
+- **Event Management**: Complete event lifecycle (create, edit, delete, join)
+- **User Connections**: Friend requests and connection management
+- **File Storage**: Avatar and hobby image storage via Supabase Storage
+- **Data Integrity**: Foreign keys, constraints, and validation rules
+- **Performance**: Indexes on frequently queried columns for optimization
+- **Row Level Security**: Granular access control at database level
 
 ### ⏭️ Next Steps
 
@@ -625,12 +739,43 @@ Admins can:
 3. **Run migrations**: `npm run db:setup`
 4. **Verify schema**: Check Supabase dashboard for tables and RLS policies
 5. **Test auth trigger**: Create a user via Supabase Auth UI, verify profile auto-created
+6. **Test connections**: Use the connections API to test friend request flows
+
+### Current Architecture
+
+**Frontend**: Vanilla JavaScript, HTML, CSS, Bootstrap
+- `src/services/api.js` – APIService for database operations
+- `src/pages/*` – Multi-page application structure
+- `src/components/*` – Reusable components (header, footer, loader)
+
+**Backend**: Supabase PostgreSQL
+- 11 tables with proper relationships
+- RLS policies for security
+- Triggers for automation
+- Indexes for performance
+
+**Storage**: Supabase Storage
+- `avatars` bucket – User profile images
+- `hobbies` bucket – Hobby category images
+- Optional `locations` bucket – Location images
+
+### API Integration
+
+The `APIService` class in [src/services/api.js](src/services/api.js) provides methods for:
+- Authentication (register, login, logout)
+- User profiles (getProfile, updateProfile)
+- Hobbies (getHobbies, getHobbyById)
+- Events (getEvents, getEventById, createEvent, joinEvent)
+- Connections (getConnections, sendConnectionRequest, acceptConnection, rejectConnection)
+- File uploads (avatar, event images)
 
 ### Schema Improvements Applied
 
 **Event Participation Status**: Uses PostgreSQL enum `event_participation_status` instead of plain text. Values: `joined`, `cancelled`, `pending`.
 
-This improves data integrity by enforcing valid status values at the database level rather than relying on application validation.
+**Connection Status**: Uses CHECK constraint to enforce valid status values. Values: `pending`, `accepted`, `rejected`, `blocked`.
+
+These improvements ensure data integrity by enforcing valid values at the database level rather than relying on application validation.
 
 ### Production Considerations
 
@@ -638,8 +783,232 @@ This improves data integrity by enforcing valid status values at the database le
 - **Migration Idempotency**: Migrations are designed to be idempotent where possible (e.g., `CREATE TABLE IF NOT EXISTS`).
 - **Audit Trail**: The `_schema_migrations` table tracks applied migrations. Never manually edit this table.
 - **RLS Policies**: All tables have RLS enabled. Policies follow the principle of least privilege:
-  - Public tables (hobbies, tags, locations) are readable by all
-  - User data (profiles, hobbies) are user-controlled
+  - Public tables (hobbies, tags, locations, events) are readable by all
+  - User data (profiles, connections) are user-controlled
   - Events and participants follow host/seeker/admin hierarchy
+  - Connections are bidirectional visibility (requester and receiver can see)
+- **Cascade Deletes**: Profile deletions cascade to connections, events, and event_participants
 - **Performance**: Indexes created on all foreign keys and frequently queried columns
 - **Backup**: Always test migrations on a development branch first
+
+---
+
+## Common Query Patterns
+
+These patterns demonstrate how to retrieve data efficiently from the database using the schema design.
+
+### Retrieve User Profile with Hobbies
+
+```sql
+SELECT 
+  p.*,
+  ARRAY_AGG(h.name) as hobbies
+FROM profiles p
+LEFT JOIN user_hobbies uh ON p.id = uh.profile_id
+LEFT JOIN hobbies h ON uh.hobby_id = h.id
+WHERE p.id = $1
+GROUP BY p.id;
+```
+
+### Get All Events for a Hobby with Participant Count
+
+```sql
+SELECT 
+  e.*,
+  h.name as hobby_name,
+  COUNT(DISTINCT ep.profile_id) as participant_count
+FROM events e
+JOIN hobbies h ON e.hobby_id = h.id
+LEFT JOIN event_participants ep ON e.id = ep.event_id
+WHERE e.hobby_id = $1
+GROUP BY e.id, h.id
+ORDER BY e.event_date ASC;
+```
+
+### Get User's Accepted Connections
+
+```sql
+SELECT 
+  CASE 
+    WHEN c.requester_id = $1 THEN c.receiver_id 
+    ELSE c.requester_id 
+  END as connected_user_id,
+  p.full_name,
+  p.avatar_url,
+  c.status,
+  c.created_at
+FROM connections c
+JOIN profiles p ON (
+  (c.requester_id = $1 AND p.id = c.receiver_id) OR
+  (c.receiver_id = $1 AND p.id = c.requester_id)
+)
+WHERE c.status = 'accepted'
+  AND (c.requester_id = $1 OR c.receiver_id = $1);
+```
+
+### Get Pending Connection Requests for User
+
+```sql
+SELECT 
+  c.id,
+  c.requester_id,
+  p.full_name,
+  p.avatar_url,
+  c.created_at
+FROM connections c
+JOIN profiles p ON c.requester_id = p.id
+WHERE c.receiver_id = $1 
+  AND c.status = 'pending'
+ORDER BY c.created_at DESC;
+```
+
+### Get Hobbies with Associated Tags
+
+```sql
+SELECT 
+  h.*,
+  ARRAY_AGG(JSON_BUILD_OBJECT('id', t.id, 'name', t.name)) as tags
+FROM hobbies h
+LEFT JOIN hobby_tags ht ON h.id = ht.hobby_id
+LEFT JOIN tags t ON ht.tag_id = t.id
+GROUP BY h.id
+ORDER BY h.name ASC;
+```
+
+### Get User's Upcoming Events
+
+```sql
+SELECT 
+  e.*,
+  h.name as hobby_name,
+  l.address as location_address,
+  (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id) as participant_count
+FROM events e
+JOIN hobbies h ON e.hobby_id = h.id
+JOIN locations l ON e.location_id = l.id
+WHERE e.id IN (
+  SELECT event_id FROM event_participants WHERE profile_id = $1
+)
+AND e.event_date > now()
+ORDER BY e.event_date ASC;
+```
+
+---
+
+## Database Performance Tips
+
+1. **Use indexes**: All foreign key columns and status fields are indexed
+2. **Eager loading**: Load related data with JOINs rather than N+1 queries
+3. **Aggregate functions**: Use ARRAY_AGG for relationships instead of multiple queries
+4. **Filter early**: Apply WHERE clauses before JOINs when possible
+5. **Pagination**: Use LIMIT and OFFSET for large result sets
+6. **Connection pooling**: Supabase handles connection pooling automatically
+
+---
+
+## Troubleshooting Common Issues
+
+### Foreign Key Constraint Violations
+
+**Problem**: Getting error when trying to insert/update records
+**Solution**: Verify:
+- Parent record exists before referencing it
+- Profile exists for user (should be auto-created on signup)
+- Referenced IDs match the expected UUID format
+
+### RLS Policy Denial
+
+**Problem**: Getting "permission denied" when querying data
+**Solution**:
+- Verify user is authenticated (has valid JWT)
+- Check if user's role matches policy requirements
+- Ensure RLS policies are correctly configured in migrations
+- Check that the user has permission for the operation (SELECT, INSERT, UPDATE, DELETE)
+
+### Silent Data Retrieval Failures
+
+**Problem**: Queries return empty results unexpectedly
+**Solution**:
+- Check RLS policies on the table
+- Verify filters in WHERE clause match actual data
+- Check data types match (UUID vs string)
+- Enable query logging in Supabase to see actual queries
+
+---
+
+## Migration Strategy
+
+### How Migrations Work
+
+1. **Migration Files**: SQL files in `supabase/migrations/` numbered sequentially
+2. **Tracking**: Supabase tracks applied migrations in `_schema_migrations` table
+3. **Ordering**: Migrations execute in numerical order (001, 002, etc.)
+4. **Idempotency**: Each migration should be safe to run multiple times
+
+### Migration Categories
+
+**Schema Migrations**:
+- `001_enums_and_base_tables.sql` – Domain models
+- `002_junction_and_relationship_tables.sql` – Relationships
+- `013_setup_storage_bucket.sql` – File storage setup
+- `021_create_connections_table.sql` – Feature additions
+
+**Trigger and Function Migrations**:
+- `003_auth_triggers.sql` – Automation on data changes
+- `015_fix_ambiguous_user_id_helpers.sql` – Helper functions
+
+**Policy Migrations**:
+- `004_rls_policies.sql` – Security controls
+- `006_fix_public_access.sql` – Access refinements
+- `016_fix_events_rls_for_own_records.sql` – Bug fixes
+- `017_align_roles_and_access_policies.sql` – Policy alignment
+
+**Data Migrations**:
+- `005_seed_data.sql` – Initial data population
+- `009_add_email_to_profiles.sql` – Schema modifications with data handling
+
+### Running Migrations Manually
+
+```bash
+# Run all pending migrations
+npm run db:setup
+
+# Or manually via Supabase CLI
+supabase migration up
+```
+
+### Creating New Migrations
+
+1. Create new file: `supabase/migrations/NNN_description.sql`
+2. Use sequential numbering
+3. Include IF NOT EXISTS checks for idempotency
+4. Add RLS policies for new tables
+5. Test on development branch first
+6. Apply and verify in Supabase dashboard
+
+### Rollback Strategy
+
+**Note**: Supabase doesn't support automatic rollbacks. Instead:
+
+1. Create a new migration that undoes the changes
+2. Test in development branch
+3. Apply the fix migration
+4. Never delete applied migrations
+
+Example revert migration:
+```sql
+-- 023_revert_feature.sql
+DROP TABLE IF EXISTS feature_table;
+DROP POLICY IF EXISTS policy_name ON table_name;
+```
+
+---
+
+## References and Resources
+
+- [Supabase Database Documentation](https://supabase.com/docs/guides/database)
+- [Row Level Security (RLS) Guide](https://supabase.com/docs/guides/auth/row-level-security)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [Project Architecture](PROJECT_CONTEXT.md)
+- [Authentication Guide](AUTHENTICATION.md)
+- [API Service Documentation](src/services/api.js)

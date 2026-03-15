@@ -54,15 +54,18 @@ This command:
 
 ℹ️  Initializing migration tracking...
 ℹ️  Discovering migrations...
-ℹ️  Found 5 migration(s)
+ℹ️  Found 22 migration(s)
 ℹ️  0 migration(s) already applied
 
-5 migration(s) pending:
+22 migration(s) pending:
   - 001_enums_and_base_tables.sql
   - 002_junction_and_relationship_tables.sql
   - 003_auth_triggers.sql
   - 004_rls_policies.sql
   - 005_seed_data.sql
+  - 006_fix_public_access.sql
+  - ... (and 16 more migrations)
+  - 022_fix_tags_admin_update_permissions.sql
 
 ================================================================================
 Executing Pending Migrations
@@ -71,13 +74,13 @@ Executing Pending Migrations
 ℹ️  Running migration: 001_enums_and_base_tables.sql
 ✅ Migration applied: 001_enums_and_base_tables.sql
 ...
-✅ Migration applied: 005_seed_data.sql
+✅ Migration applied: 022_fix_tags_admin_update_permissions.sql
 
 ================================================================================
 Migration Summary
 ================================================================================
 
-✅ 5/5 migrations applied successfully
+✅ 22/22 migrations applied successfully
 
 🎉 Database migration complete! Your schema is ready.
 ```
@@ -136,12 +139,30 @@ Implements Row-Level Security (RLS) policies to restrict data access:
 
 ### 005_seed_data.sql
 Populates initial data for development and testing:
-- **15 hobbies**: Hiking, Photography, Chess, Cooking, Painting, Dancing, Literature & Reading, Travel, Gardening, Fitness, Music, Board Games, Yoga, Cycling, Rock Climbing
-- **20 tags**: Beginner Friendly, Casual, Skill Building, Competitive, Relaxing, Adventure, Nature, Cultural, Social, Mindful, Fitness, Creative, Outdoor, Indoor, Just for Fun, Weekend Activity, Evening Activity, All Ages, Group Activity, Collaborative
+- **12 hobbies**: Paint Art, Hiking, Music & Instruments, Cooking, Literature & Reading, Chess, Dancing, Photography, Cycling Sport, Yoga & Meditation, Rock Climbing, Travel & Exploration
+- **19 tags**: Adventure, All Ages, Beginner Friendly, Casual, Competitive, Creative, Cultural, Evening Activity, Group Activity, Indoor, Just for Fun, Mindful, Nature, Outdoor, Relaxing, Skill Building, Social, Sport, Weekend Activity
 - **10 locations**: Real/realistic venue names (Vitosha Mountain, Borisova Garden, Community Chess Club, etc.)
-- **~80+ hobby-tag relationships**: Links hobbies to descriptive tags
+- **~130+ hobby-tag relationships**: Links hobbies to descriptive tags
 
 **What it does**: Provides realistic sample data for application testing and demonstration.
+
+### 006_fix_public_access.sql through 022_fix_tags_admin_update_permissions.sql
+These migrations (006-022) handle:
+- Public read access policies for data viewing
+- Email field addition to profiles
+- Email uniqueness constraints
+- Profile trigger enhancements
+- RLS policy verification and fixes
+- Storage bucket setup (avatars, hobbies)
+- Function fixes (ambiguous user_id references)
+- Event RLS policy refinements
+- Role and access policy alignment
+- Event tags insert/delete permissions
+- Admin update permissions
+- Connections table for user-to-user relationships
+- Tag admin update permissions
+
+**What they do**: Fine-tune security policies, add new features (connections), and ensure all RLS policies work correctly with the application's business logic.
 
 ---
 
@@ -158,7 +179,8 @@ WHERE table_schema = 'public'
 ORDER BY table_name;
 ```
 
-You should see ~10 tables:
+You should see ~11 tables:
+- connections
 - event_participants
 - event_tags
 - events
@@ -183,10 +205,11 @@ Should show:
 
 ### 3. Check Seed Data
 ```sql
-SELECT COUNT(*) as hobby_count FROM hobbies;        -- Should be 15
-SELECT COUNT(*) as tag_count FROM tags;              -- Should be 20
+SELECT COUNT(*) as hobby_count FROM hobbies;        -- Should be 12
+SELECT COUNT(*) as tag_count FROM tags;              -- Should be 19
 SELECT COUNT(*) as location_count FROM locations;    -- Should be 10
-SELECT COUNT(*) as hobby_tag_count FROM hobby_tags;  -- Should be ~80+
+SELECT COUNT(*) as hobby_tag_count FROM hobby_tags;  -- Should be ~130+
+SELECT COUNT(*) as connection_count FROM connections; -- Should be 0 (grows with users)
 ```
 
 ### 4. Verify RLS is Enabled
@@ -327,10 +350,13 @@ supabase db push
 
 ### Pre-Deployment Checklist
 
-- [ ] All migrations run successfully on development database
+- [ ] All 22 migrations run successfully on development database
 - [ ] RLS policies tested with different user roles (seeker, host, admin)
-- [ ] Seed data verified (hobbies, tags, locations populated)
+- [ ] Seed data verified (12 hobbies, 19 tags, 10 locations populated)
 - [ ] No errors in application logs when fetching data
+- [ ] User signup → profile auto-creation → role auto-assignment working
+- [ ] Event creation and participation workflows functional
+- [ ] Connection requests feature working
 - [ ] Supabase backup created before migration
 - [ ] Service role key stored securely (not in code/repo)
 
@@ -354,7 +380,9 @@ supabase db push
 - Monitor application logs for RLS violations or access errors
 - Test user signup → profile auto-creation → role auto-assignment
 - Verify event creation and participation workflows
+- Test user connections (send/accept connection requests)
 - Keep backup of service role key somewhere secure (password manager, etc.)
+- Note: Hobby locations UI is not yet fully developed; database tables exist for future implementation
 
 ---
 
@@ -392,7 +420,9 @@ Database triggers:
 - **Supabase Documentation**: https://supabase.com/docs
 - **PostgreSQL Documentation**: https://www.postgresql.org/docs/
 - **Hobby Buddy Hub Database Schema**: [DB_SCHEMA.md](DB_SCHEMA.md)
+- **Authentication Guide**: [AUTHENTICATION.md](AUTHENTICATION.md)
 - **Project Architecture**: [README.md](README.md)
+- **Project Overview**: [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md)
 
 ---
 

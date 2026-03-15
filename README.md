@@ -1,269 +1,192 @@
-# Hobby Buddy Hub - Multi-Page Application
+# Hobby Buddy Hub
 
-A vanilla JavaScript multi-page application (MPA) built with Vite, Bootstrap, and Supabase.
+A multi-page JavaScript web application that helps people discover hobbies, find others with similar interests, and organize hobby-related activities and events.
 
-## Project Structure
+**Tech Stack**: Vanilla JavaScript • HTML5 • CSS3 • Bootstrap 5 • Vite • Supabase
+
+---
+
+## 📋 Project Overview
+
+Hobby Buddy Hub is a community platform connecting **hobby seekers** (who want to discover and join activities) with **hobby hosts** (who organize events). The platform includes role-based access control and admin management for platform content.
+
+**Key Features**:
+- User authentication and profiles
+- Browse hobbies with interest tags
+- Create, manage, and join events
+- User connections and networking
+- Role-based access control (seeker, host, admin)
+- Admin panel for platform management
+
+For detailed feature description, see [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md).
+
+---
+
+## 🏗️ Architecture
+
+### Frontend
+- **Type**: Multi-page application (MPA)
+- **Framework**: Vanilla JavaScript (ES6+)
+- **Build Tool**: Vite
+- **UI**: Bootstrap 5 with custom CSS
+- **Structure**: Self-contained pages with shared components
+
+### Backend
+- **Database**: Supabase PostgreSQL (11 tables)
+- **Authentication**: Supabase Auth (JWT tokens)
+- **Storage**: Supabase Storage (avatars, event images, hobby images)
+- **Security**: Row Level Security (RLS) policies
+- **Migrations**: 22 applied migrations with full schema
+
+
+**Relationships**: User profiles connect to hobbies, events, and other users. Events link hobbies with locations and participants. Full schema details in [DB_SCHEMA.md](DB_SCHEMA.md).
+
+---
+
+## 📁 Project Structure
 
 ```
 Hobby_Buddy_Hub/
-├── pages/                          # Application pages (Multi-Page structure)
-│   ├── index/                      # Home page
-│   │   ├── index.html              # Page HTML
-│   │   ├── style.css               # Page styles
-│   │   └── script.js               # Page scripts
-│   │
-│   ├── dashboard/                  # Dashboard page
-│   │   ├── index.html              # Page HTML
-│   │   ├── style.css               # Page styles
-│   │   └── script.js               # Page scripts
-│   │
-│   └── components/                 # Shared components
-│       ├── header.html             # Navigation bar (included on all pages)
-│       └── footer.html             # Footer (included on all pages)
+├── src/
+│   ├── app.js                  # Application entry point
+│   ├── config.js               # Supabase configuration
+│   ├── main.js                 # Initialization
+│   ├── components/             # Reusable UI components
+│   │   ├── header.js
+│   │   ├── footer.js
+│   │   └── loader.js
+│   ├── pages/                  # Page-specific logic
+│   │   ├── home.js
+│   │   ├── hobbies.js
+│   │   ├── events.js
+│   │   ├── profile.js
+│   │   ├── auth/
+│   │   │   ├── login.js
+│   │   │   └── register.js
+│   │   └── ...
+│   ├── services/
+│   │   └── api.js              # APIService for Supabase operations
+│   ├── styles/                 # Component and page styles
+│   └── utils/
+│       └── router.js           # Application router
 │
-├── public/                          # Static assets
+├── pages/                      # HTML page templates
+│   ├── home.html
+│   ├── hobbies.html
+│   ├── hobbies-details.html
+│   ├── events.html
+│   ├── event-details.html
+│   ├── create-event.html
+│   ├── profile.html
+│   ├── dashboard.html
+│   ├── people.html
+│   ├── my-connections.html
+│   ├── admin.html
+│   ├── auth/
+│   │   ├── login.html
+│   │   └── register.html
+│   └── components/
+│       ├── header.html
+│       └── footer.html
+│
+├── public/                     # Static assets
 │   ├── css/
-│   │   └── global.css              # Global styles (all pages)
-│   ├── js/
-│   │   └── global.js               # Global utilities
-│   └── images/                     # Images, icons, etc.
+│   │   └── global.css
+│   └── js/
+│       └── global.js
 │
-├── index.html                       # Main entry point
-├── package.json                     # Dependencies
-├── vite.config.js                   # Vite configuration (MPA setup)
-├── .env.example                     # Environment template
-├── .gitignore                       # Git ignore rules
-└── README.md                        # This file
-
+├── supabase/
+│   ├── migrations/             # 22 database migrations
+│   └── queries/                # SQL utilities
+│
+├── index.html                  # Main entry point
+├── vite.config.js              # Build configuration
+├── package.json
+└── README.md
 ```
 
-## Features
+**Key Files**:
+- `src/services/api.js` – APIService class for all database operations
+- `src/components/header.js` – Navigation with authentication support
+- `supabase/migrations/` – Database schema and setup
+- `pages/*.html` – Page templates
+- `src/pages/*.js` – Page logic and event handlers
 
-✅ Multi-Page Application (MPA) - Each page has its own HTML, CSS, JS  
-✅ Shared Header & Footer components (auto-loaded)  
-✅ Responsive design (mobile/tablet/desktop)  
-✅ Bootstrap 5 components  
-✅ Custom CSS with responsive breakpoints  
-✅ Vite build tool for fast development  
-✅ Vanilla JavaScript (no frameworks)  
-✅ Easy to add new pages  
+---
 
-## Setup Instructions
+## 🚀 Local Development Setup
+
+### Prerequisites
+- Node.js (v16+)
+- npm or yarn
+- Supabase account with a project
 
 ### 1. Install Dependencies
-
 ```bash
 npm install
 ```
 
-### 2. Environment Configuration
-
-Create a `.env.local` file in the root directory with your Supabase credentials:
-
+### 2. Configure Supabase
+Create `.env.local` file:
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_KEY=your-public-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # For migrations only
 ```
-VITE_SUPABASE_URL=your-supabase-url
-VITE_SUPABASE_KEY=your-supabase-anon-key
+
+### 3. Run Database Migrations
+```bash
+npm run db:setup
 ```
 
-### 3. Development Server
+This applies all 22 migrations to set up the database schema.
 
-Start the development server:
-
+### 4. Start Development Server
 ```bash
 npm run dev
 ```
 
-The app will open at `http://localhost:5173`
+App runs at `http://localhost:5173`
 
-### 4. Build for Production
-
+### 5. Build for Production
 ```bash
 npm run build
-```
-
-Output files will be in the `dist/` directory.
-
-### 5. Preview Production Build
-
-```bash
 npm run preview
 ```
 
-## Page Structure
+---
 
-Each page folder contains three files:
+## 📚 Documentation
 
-### index.html
-- Contains the complete page HTML
-- Includes Bootstrap CDN links
-- Loads global CSS and page-specific CSS
-- Has placeholders for header and footer (`id="header-container"` & `id="footer-container"`)
+- **[PROJECT_CONTEXT.md](PROJECT_CONTEXT.md)** – Features, user types, implementation status
+- **[DB_SCHEMA.md](DB_SCHEMA.md)** – Database tables, relationships, RLS policies, migrations
+- **[AUTHENTICATION.md](AUTHENTICATION.md)** – Auth flow, role-based access, troubleshooting
+- **[MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)** – Database migration instructions
 
-### style.css
-- Page-specific styles
-- Complements global CSS
-- Only loaded when page is active
+---
 
-### script.js
-- Page-specific JavaScript
-- Calls `setActiveNav()` to highlight active navigation link
-- Handles page initialization and events
+## ✅ Current Status
 
-## How to Add a New Page
+**Implemented**: Authentication, user profiles, hobby discovery, event management, user connections, admin panel, dashboard
 
-### 1. Create Page Folder
+**Not Yet Developed**: Hobby locations page, event editing by hosts, email notifications, advanced search, analytics
 
-```bash
-mkdir pages/mypage
-```
+See [Implementation Status](PROJECT_CONTEXT.md#implementation-status) for details.
 
-### 2. Create Page Files
+---
 
-**pages/mypage/index.html**
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Page - Hobby Buddy Hub</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="/public/css/global.css">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <header id="header-container"></header>
-    
-    <main class="min-vh-100">
-        <div class="container py-4">
-            <h1>My Page</h1>
-            <!-- Page content here -->
-        </div>
-    </main>
-    
-    <footer id="footer-container"></footer>
+## 🔧 Technologies
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/public/js/global.js"></script>
-    <script src="script.js"></script>
-</body>
-</html>
-```
+**Frontend**: Vanilla JavaScript • HTML5 • CSS3 • Bootstrap 5 • Vite
 
-**pages/mypage/style.css**
-```css
-/* Page-specific styles */
-```
+**Backend**: Supabase PostgreSQL • Supabase Auth • Supabase Storage
 
-**pages/mypage/script.js**
-```javascript
-document.addEventListener('DOMContentLoaded', () => {
-    setActiveNav('My Page');
-});
-```
+**Deployment**: Netlify/Vercel
 
-### 3. Update Vite Config
+**Version Control**: GitHub
 
-Add the new page to `vite.config.js`:
+---
 
-```javascript
-input: {
-  main: resolve(__dirname, 'index.html'),
-  mypage: resolve(__dirname, 'pages/mypage/index.html'),
-  // ... other pages
-},
-```
+## 📝 License
 
-### 4. Add Navigation Link
-
-Update `pages/components/header.html` to include the new page:
-
-```html
-<li class="nav-item">
-    <a class="nav-link" href="/pages/mypage/index.html">
-        <i class="bi bi-icon me-1"></i>My Page
-    </a>
-</li>
-```
-
-## Global Components
-
-### Header (`pages/components/header.html`)
-- Navigation bar
-- Auto-loaded on all pages
-- Contains links to all pages
-- Active link highlighting
-
-### Footer (`pages/components/footer.html`)
-- Footer with links and social media
-- Auto-loaded on all pages
-
-Both components are loaded automatically by `public/js/global.js` on page load.
-
-## Styling System
-
-### Global CSS (`public/css/global.css`)
-- Base styles for all pages
-- CSS variables for colors
-- Typography
-- Responsive breakpoints
-- Animations
-
-### Page CSS (`pages/*/style.css`)
-- Page-specific customizations
-- Complements global styles
-
-## Navigation
-
-Simply use standard HTML links to navigate between pages:
-
-```html
-<a href="/pages/dashboard/index.html">Dashboard</a>
-<a href="/pages/index/index.html">Home</a>
-```
-
-No need for special routing or JavaScript - full page navigation.
-
-## Browser Support
-
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-- Mobile browsers (iOS Safari, Chrome Mobile)
-
-## Technologies
-
-- **Frontend**: Vanilla JavaScript, HTML5, CSS3
-- **Build Tool**: Vite
-- **UI Framework**: Bootstrap 5
-- **Icons**: Bootstrap Icons
-- **Backend**: Supabase (planned integration)
-- **Hosting**: Netlify/Vercel (planned)
-
-## Next Steps
-
-1. Create authentication pages (login, register)
-2. Create browse hobbies page
-3. Create events listing and details pages
-4. Integrate Supabase authentication
-5. Add user profile management
-6. Implement event creation and management
-7. Add search and filtering functionality
-
-## Troubleshooting
-
-### Header/Footer not loading
-Make sure the path in `public/js/global.js` is correct for your environment.
-
-### Styles not applying
-Check that global.css and page-specific style.css are properly linked in the HTML file.
-
-### Navigation not working
-Use proper relative paths like `/pages/pagename/index.html` for navigation links.
-
-## License
-
-MIT License - 2026 Hobby Buddy Hub
+MIT License – 2026 Hobby Buddy Hub
