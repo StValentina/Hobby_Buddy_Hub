@@ -1,3 +1,6 @@
+
+**Exam Project for "Software Technologies with AI" in SoftUni AI** – January 2026
+
 # Hobby Buddy Hub
 
 A multi-page JavaScript web application that helps people discover hobbies, find others with similar interests, and organize hobby-related activities and events.
